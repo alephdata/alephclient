@@ -1,10 +1,20 @@
 import os
-import logging
 
 from normality import slugify
 
 
-def crawl_dir(api, path, foreign_id, category, language=None, country=None):
+def crawl_dir(api, path, foreign_id, category=None, language=None, country=None):
+    """Crawl a directory and upload its content to a collection
+
+    params
+    ------
+    path: path of the directory
+    foreign_id: foreign_id of the collection to use. (new collection is created
+    if doesn't exist already)
+    category: category of the collection if a new one if to be created
+    language: language hint for the documents
+    country: country hint for the documents
+    """
     path = os.path.abspath(os.path.normpath(path))
     path_name = os.path.basename(path)
     collections = api.filter_collections(filters=[("foreign_id", foreign_id)])
@@ -13,7 +23,7 @@ def crawl_dir(api, path, foreign_id, category, language=None, country=None):
             'foreign_id': foreign_id,
             'label': path_name,
             'managed': True,
-            'category': category
+            'category': category or "other"
         }
         if language is not None:
             collection_data["languages"] = [language]
