@@ -1,4 +1,5 @@
 import os
+import json
 from six.moves.urllib.parse import urlencode
 import requests
 
@@ -42,23 +43,30 @@ class AlephAPI(object):
         if not query and not filters:
             raise ValueError("One of query or filters is required")
         url = self._make_url("collections", filters=filters, **kwargs)
-        print(url)
         return self._request("GET", url)["results"]
 
     def create_collection(self, data):
         url = self._make_url("collections")
-        print(data)
         return self._request("POST", url, data=data)
 
     def update_collection(self, collection_id, data):
         url = self._make_url("collections/{0}".format(collection_id))
         return self._request("PUT", url, data=data)
 
-    def ingest_upload(self, collection_id, full_file_path, relative_file_path):
+    def ingest_upload(self, collection_id, full_file_path=None, metadata=None):
         url = self._make_url("collections/{0}/ingest".format(collection_id))
-        path = os.path.abspath(os.path.normpath(full_file_path))
-        if not os.path.isfile(path):
-            raise ValueError("{0} is not a valid file path".format(path))
-        with open(path, "rb") as fh:
-            print("Uploading " + path)
-            return self._request("POST", url, files={relative_file_path: fh})
+        if full_file_path:
+            path = os.path.abspath(os.path.normpath(full_file_path))
+            if not os.path.isfile(path):
+                raise ValueError("{0} is not a valid file path".format(path))
+            with open(path, "rb") as fh:
+                print("Uploading " + path)
+                name = os.path.basename(path)
+                return self._request(
+                    "POST", url, files={name: fh},
+                    data={"meta": json.dumps(metadata)}
+                )
+        else:
+            return self._request(
+                "POST", url, data={"meta": json.dumps(metadata)}
+            )

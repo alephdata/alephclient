@@ -1,8 +1,7 @@
 import os
 import logging
 
-
-log = logging.getLogger('alephclient')
+from normality import slugify
 
 
 def crawl_dir(api, path, foreign_id, category, language=None, country=None):
@@ -23,12 +22,23 @@ def crawl_dir(api, path, foreign_id, category, language=None, country=None):
         collection = api.create_collection(data=collection_data)
     else:
         collection = collections[0]
-    log.info('Crawling %r to %r...', path, foreign_id)
     # Crawl dir and add documents to aleph
     for dirpath, subdirs, files in os.walk(path):
+        relative_path = os.path.relpath(dirpath, path)
+        if relative_path == ".":
+            parent_foreign_id = foreign_id
+        else:
+            parent_foreign_id = foreign_id + ":" + slugify(relative_path)
+        metadata = {
+            "parent": {"foreign_id": parent_foreign_id}
+        }
         for f in files:
             full_file_path = os.path.join(dirpath, f)
-            relative_file_path = os.path.relpath(full_file_path, path)
-            api.ingest_upload(
-                collection["id"], full_file_path, relative_file_path
+            api.ingest_upload(collection["id"], full_file_path, metadata)
+        for subdir in subdirs:
+            dir_foreign_id = (
+                foreign_id + ":" + slugify(os.path.join(relative_path, subdir))
             )
+            metadata["foreign_id"] = dir_foreign_id
+            metadata["file_name"] = subdir
+            api.ingest_upload(collection["id"], metadata=metadata)
