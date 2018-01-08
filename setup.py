@@ -20,6 +20,12 @@ setup(
         "click==6.7",
         "normality==0.5.7",
     ],
+    extras_require={
+        'dev': [
+            'pytest',
+            'pytest-mock',
+        ]
+    },
     entry_points='''
         [console_scripts]
         alephclient=alephclient.cli:cli

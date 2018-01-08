@@ -38,17 +38,20 @@ def crawl_dir(api, path, foreign_id, category=None,
             parent_foreign_id = foreign_id
         else:
             parent_foreign_id = os.path.join(foreign_id, relative_path)
-        metadata = {
-            "parent": {"foreign_id": parent_foreign_id}
-        }
         for f in files:
             full_file_path = os.path.join(dirpath, f)
             file_name = os.path.basename(full_file_path)
-            metadata["foreign_id"] = os.path.join(parent_foreign_id, file_name)
-            metadata["file_name"] = file_name
+            metadata = {
+                "parent": {"foreign_id": parent_foreign_id},
+                "foreign_id": os.path.join(parent_foreign_id, file_name),
+                "file_name": file_name,
+            }
             api.ingest_upload(collection["id"], full_file_path, metadata)
         for subdir in subdirs:
             dir_foreign_id = os.path.join(parent_foreign_id, subdir)
-            metadata["foreign_id"] = dir_foreign_id
-            metadata["file_name"] = subdir
+            metadata = {
+                "parent": {"foreign_id": parent_foreign_id},
+                "foreign_id": dir_foreign_id,
+                "file_name": subdir,
+            }
             api.ingest_upload(collection["id"], metadata=metadata)
