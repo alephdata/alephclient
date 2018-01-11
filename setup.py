@@ -3,7 +3,7 @@ from setuptools import setup
 setup(
     name='alephclient',
     version='0.1',
-    description="API client for Aleph API",
+    description="Command-line client for Aleph API",
     author='Journalism Development Network',
     author_email='data@occrp.org',
     url='http://github.com/alephdata/alephclient',
@@ -28,6 +28,6 @@ setup(
     },
     entry_points='''
         [console_scripts]
-        alephclient=alephclient.cli:cli
+        alephclient = alephclient.cli:cli
     ''',
 )
