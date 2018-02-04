@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='alephclient',
-    version='0.2.1',
+    version='0.2.2',
     description="Command-line client for Aleph API",
     author='Journalism Development Network',
     author_email='data@occrp.org',
@@ -16,6 +16,7 @@ setup(
     packages=['alephclient', 'alephclient.tasks'],
     install_requires=[
         "six>=1.11.0",
+        "banal",
         "requests>=2.18.4",
         "requests_toolbelt>=0.8.0",
         "click>=6.7",
