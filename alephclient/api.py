@@ -2,6 +2,7 @@ import os
 import json
 from six.moves.urllib.parse import urlencode
 import requests
+from requests_toolbelt import MultipartEncoder
 
 
 class AlephAPI(object):
@@ -29,7 +30,7 @@ class AlephAPI(object):
         headers = kwargs.pop("headers", {})
         headers["Authorization"] = "ApiKey " + self.api_key
         response = requests.request(
-                method=method, url=url, headers=headers, **kwargs
+            method=method, url=url, headers=headers, **kwargs
         )
         response.raise_for_status()
         return response.json()
@@ -96,11 +97,15 @@ class AlephAPI(object):
             with open(path, "rb") as fh:
                 print("Uploading " + path)
                 name = os.path.basename(path)
-                return self._request(
-                    "POST", url, files={name: fh},
-                    data={"meta": json.dumps(metadata)}
-                )
+                # use multipart encoder to allow uploading very large files
+                m = MultipartEncoder(fields={
+                    'meta': json.dumps(metadata),
+                    'files': (name, fh, 'application/octet-stream')
+                })
+                headers = {
+                    'Content-Type': m.content_type
+                }
+                return self._request("POST", url, data=m, headers=headers)
         else:
-            return self._request(
-                "POST", url, data={"meta": json.dumps(metadata)}
-            )
+            data = {"meta": json.dumps(metadata)}
+            return self._request("POST", url, data=data)
