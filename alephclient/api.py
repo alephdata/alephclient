@@ -95,7 +95,6 @@ class AlephAPI(object):
             if not os.path.isfile(path):
                 raise ValueError("{0} is not a valid file path".format(path))
             with open(path, "rb") as fh:
-                print("Uploading " + path)
                 name = os.path.basename(path)
                 # use multipart encoder to allow uploading very large files
                 m = MultipartEncoder(fields={

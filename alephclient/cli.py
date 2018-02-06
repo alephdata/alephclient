@@ -1,4 +1,5 @@
 import os
+import logging
 
 import click
 
@@ -14,6 +15,10 @@ from .tasks import crawl_dir
 @click.pass_context
 def cli(ctx, api_base_url, api_key):
     """API client for Aleph API"""
+    logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger('requests').setLevel(logging.WARNING)
+    logging.getLogger('urllib3').setLevel(logging.WARNING)
+    logging.getLogger('httpstream').setLevel(logging.WARNING)
     if not api_key:
         raise click.BadParameter("Missing API key", param_hint="api-key")
     if ctx.obj is None:
@@ -23,22 +28,15 @@ def cli(ctx, api_base_url, api_key):
 
 @cli.command()
 @click.option('--language', multiple=True, help="language hint")
-@click.option('--country', multiple=True, help="country hint")
-@click.option('--foreign-id', required=True,
-              help="foreign_id of the collection to use or create")
-@click.option('--category',
-              help="category of the collection if creating a new one")
+@click.option('--foreign-id',
+              required=True,
+              help="foreign_id of the collection")
 @click.argument('path')
 @click.pass_context
-def crawldir(ctx, path, foreign_id, category=None,
-             language=None, country=None):
+def crawldir(ctx, path, foreign_id, language=None):
     """Crawl a directory recursively and upload the documents in it to a
     collection."""
-    if not os.path.isdir(path):
-        raise click.BadParameter(
-            "Path needs to be a directory", param_hint="path"
-        )
-    crawl_dir(ctx.obj["api"], path, foreign_id, category, language, country)
+    crawl_dir(ctx.obj["api"], path, foreign_id, language)
 
 
 if __name__ == "__main__":
