@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import os
 
 from ..tasks import crawl_dir
@@ -32,22 +33,10 @@ class TestCrawldir(object):
         expected_calls = [
             mocker.call(
                 2,
+                None,
                 metadata={
-                    'parent': {
-                        'foreign_id': 'test153'
-                    },
-                    'foreign_id': 'test153/feb',
+                    'foreign_id': 'feb',
                     'file_name': 'feb'
-                }
-            ),
-            mocker.call(
-                2,
-                metadata={
-                    'parent': {
-                        'foreign_id': 'test153'
-                    },
-                    'foreign_id': 'test153/jan',
-                    'file_name': 'jan'
                 }
             ),
             mocker.call(
@@ -55,21 +44,30 @@ class TestCrawldir(object):
                 os.path.join(os.path.abspath(
                     "alephclient/tests/testdata"), "feb/2.txt"
                 ),
-                {
+                metadata={
                     'parent': {
-                        'foreign_id': 'test153/feb'
+                        'foreign_id': 'feb'
                     },
-                    'foreign_id': 'test153/feb/2.txt',
+                    'foreign_id': 'feb/2.txt',
                     'file_name': '2.txt'
                 }
             ),
             mocker.call(
                 2,
+                None,
+                metadata={
+                    'foreign_id': 'jan',
+                    'file_name': 'jan'
+                }
+            ),
+            mocker.call(
+                2,
+                None,
                 metadata={
                     'parent': {
-                        'foreign_id': 'test153/jan'
+                        'foreign_id': 'jan'
                     },
-                    'foreign_id': 'test153/jan/week1',
+                    'foreign_id': 'jan/week1',
                     'file_name': 'week1'
                 }
             ),
@@ -78,11 +76,11 @@ class TestCrawldir(object):
                 os.path.join(os.path.abspath(
                     "alephclient/tests/testdata"), "jan/week1/1.txt"
                 ),
-                {
+                metadata={
                     'parent': {
-                        'foreign_id': 'test153/jan/week1'
+                        'foreign_id': 'jan/week1'
                     },
-                    'foreign_id': 'test153/jan/week1/1.txt',
+                    'foreign_id': 'jan/week1/1.txt',
                     'file_name': '1.txt'
                 }
             ),
