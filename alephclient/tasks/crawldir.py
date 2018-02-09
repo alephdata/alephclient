@@ -29,8 +29,11 @@ def _crawl_path(api, collection_id, root_path, path):
         _upload_path(api, collection_id, root_path, path)
         if os.path.isdir(path):
             for child in os.listdir(path):
-                child = os.path.join(path, decode_path(child))
-                _crawl_path(api, collection_id, root_path, child)
+                try:
+                    child = os.path.join(path, decode_path(child))
+                    _crawl_path(api, collection_id, root_path, child)
+                except UnicodeDecodeError:
+                    log.warning("Skip child: %r", child)
     except Exception:
         log.exception('Upload failed.')
 
