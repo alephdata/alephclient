@@ -18,7 +18,7 @@ class TestCrawldir(object):
         self.api.create_collection.assert_called_once_with(
             data={'category': 'other',
                   'foreign_id': 'test153',
-                  'label': 'testdata',
+                  'label': 'test153',
                   'managed': True}
         )
 
