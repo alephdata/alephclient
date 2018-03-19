@@ -4,7 +4,7 @@ import logging
 import click
 
 from .api import AlephAPI
-from .tasks import crawl_dir
+from .tasks import crawl_dir, bulk_load
 
 
 @click.group()
@@ -37,6 +37,14 @@ def crawldir(ctx, path, foreign_id, language=None):
     """Crawl a directory recursively and upload the documents in it to a
     collection."""
     crawl_dir(ctx.obj["api"], path, foreign_id, language)
+
+
+@cli.command()
+@click.argument('mapping_file')
+@click.pass_context
+def bulkload(ctx, mapping_file):
+    """Trigger a load of structured entity data using the submitted mapping."""
+    bulk_load(ctx.obj["api"], mapping_file)
 
 
 if __name__ == "__main__":

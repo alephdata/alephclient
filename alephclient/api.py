@@ -62,7 +62,7 @@ class AlephAPI(object):
         for more details.
         """
         url = self._make_url("collections")
-        return self._request("POST", url, data=data)
+        return self._request("POST", url, json=data)
 
     def update_collection(self, collection_id, data):
         """Update an existing collection using the given data.
@@ -74,7 +74,18 @@ class AlephAPI(object):
         for more details.
         """
         url = self._make_url("collections/{0}".format(collection_id))
-        return self._request("PUT", url, data=data)
+        return self._request("PUT", url, json=data)
+
+    def map_collection(self, collection_id, mapping):
+        """Run a bulk entity data mapping on a collection.
+
+        params
+        ------
+        collection_id: id of the collection to update
+        mapping: dict with the entity bulk load mapping.
+        """
+        url = self._make_url("collections/{0}/mapping".format(collection_id))
+        return self._request("PUT", url, json=mapping)
 
     def ingest_upload(self, collection_id, full_file_path=None, metadata=None):
         """
