@@ -5,7 +5,7 @@ from banal import decode_path
 log = logging.getLogger(__name__)
 
 
-def _upload_path(api, collection_id, root_path, path):
+def _upload_path(api, collection_id, languages, root_path, path):
     relative_path = os.path.relpath(path, root_path)
     if relative_path == '.':
         if os.path.isdir(path):
@@ -13,6 +13,7 @@ def _upload_path(api, collection_id, root_path, path):
         relative_path = os.path.basename(path)
     metadata = {
         'foreign_id': relative_path,
+        'languages': languages,
         'file_name': os.path.basename(path),
     }
     parent_path = os.path.dirname(relative_path)
@@ -23,22 +24,26 @@ def _upload_path(api, collection_id, root_path, path):
     api.ingest_upload(collection_id, file_path, metadata=metadata)
 
 
-def _crawl_path(api, collection_id, root_path, path):
+def _crawl_path(api, collection_id, languages, root_path, path):
     try:
         path = decode_path(path)
-        _upload_path(api, collection_id, root_path, path)
+        _upload_path(api, collection_id, languages, root_path, path)
         if os.path.isdir(path):
             for child in os.listdir(path):
                 try:
                     child = os.path.join(path, decode_path(child))
-                    _crawl_path(api, collection_id, root_path, child)
+                    _crawl_path(api,
+                                collection_id,
+                                languages,
+                                root_path,
+                                child)
                 except UnicodeDecodeError:
                     log.warning("Skip child: %r", child)
     except Exception:
         log.exception('Upload failed.')
 
 
-def _load_collection(api, foreign_id, language=None):
+def _load_collection(api, foreign_id, languages=None):
     collections = api.filter_collections(filters=[('foreign_id', foreign_id)])
     for collection in collections:
         return collection.get('id')
@@ -47,15 +52,14 @@ def _load_collection(api, foreign_id, language=None):
         'foreign_id': foreign_id,
         'label': foreign_id,
         'managed': True,
-        'category': 'other'
+        'category': 'other',
+        'languages': languages
     }
-    if language is not None:
-        data['languages'] = [language]
     collection = api.create_collection(data=data)
     return collection.get('id')
 
 
-def crawl_dir(api, path, foreign_id, language=None):
+def crawl_dir(api, path, foreign_id, languages=None):
     """Crawl a directory and upload its content to a collection
 
     params
@@ -64,6 +68,7 @@ def crawl_dir(api, path, foreign_id, language=None):
     foreign_id: foreign_id of the collection to use.
     language: language hint for the documents
     """
+    languages = languages or []
     path = decode_path(os.path.abspath(os.path.normpath(path)))
-    collection_id = _load_collection(api, foreign_id, language=language)
-    _crawl_path(api, collection_id, path, path)
+    collection_id = _load_collection(api, foreign_id, languages=languages)
+    _crawl_path(api, collection_id, languages, path, path)
