@@ -20,6 +20,7 @@ class TestCrawldir(object):
             data={'category': 'other',
                   'foreign_id': 'test153',
                   'label': 'test153',
+                  'languages': [],
                   'managed': True}
         )
 
@@ -36,7 +37,8 @@ class TestCrawldir(object):
                 None,
                 metadata={
                     'foreign_id': 'feb',
-                    'file_name': 'feb'
+                    'file_name': 'feb',
+                    'languages': []
                 }
             ),
             mocker.call(
@@ -49,7 +51,8 @@ class TestCrawldir(object):
                         'foreign_id': 'feb'
                     },
                     'foreign_id': 'feb/2.txt',
-                    'file_name': '2.txt'
+                    'file_name': '2.txt',
+                    'languages': []
                 }
             ),
             mocker.call(
@@ -57,7 +60,8 @@ class TestCrawldir(object):
                 None,
                 metadata={
                     'foreign_id': 'jan',
-                    'file_name': 'jan'
+                    'file_name': 'jan',
+                    'languages': []
                 }
             ),
             mocker.call(
@@ -68,7 +72,8 @@ class TestCrawldir(object):
                         'foreign_id': 'jan'
                     },
                     'foreign_id': 'jan/week1',
-                    'file_name': 'week1'
+                    'file_name': 'week1',
+                    'languages': []
                 }
             ),
             mocker.call(
@@ -81,7 +86,8 @@ class TestCrawldir(object):
                         'foreign_id': 'jan/week1'
                     },
                     'foreign_id': 'jan/week1/1.txt',
-                    'file_name': '1.txt'
+                    'file_name': '1.txt',
+                    'languages': []
                 }
             ),
         ]

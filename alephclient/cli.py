@@ -1,9 +1,12 @@
 import logging
 
 import click
+from requests.exceptions import HTTPError
 
 from .api import AlephAPI
 from .tasks import crawl_dir, bulk_load
+
+log = logging.getLogger(__name__)
 
 
 @click.group()
@@ -42,8 +45,15 @@ def crawldir(ctx, path, foreign_id, language=None):
 @click.argument('mapping_file')
 @click.pass_context
 def bulkload(ctx, mapping_file):
-    """Trigger a load of structured entity data using the submitted mapping."""
-    bulk_load(ctx.obj["api"], mapping_file)
+    """Trigger a load of structured entity data using the submitted mapping."""    
+    try:
+        bulk_load(ctx.obj["api"], mapping_file)
+    except HTTPError as httperr:
+        resp = httperr.response
+        try:
+            log.error('Error: %s', resp.json().get('message'))
+        except Exception:
+            log.error('Error: %s', resp.text)
 
 
 if __name__ == "__main__":
