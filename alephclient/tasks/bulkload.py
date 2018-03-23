@@ -13,7 +13,7 @@ def _load_collection(api, foreign_id, config):
         'category': config.get('category', 'other'),
         'summary': config.get('summary', ''),
     }
-    collection = api.create_collection(data=data)
+    collection = api.create_collection(data)
     return collection.get('id')
 
 

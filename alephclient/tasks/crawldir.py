@@ -55,7 +55,7 @@ def _load_collection(api, foreign_id, languages=None):
         'category': 'other',
         'languages': languages
     }
-    collection = api.create_collection(data=data)
+    collection = api.create_collection(data)
     return collection.get('id')
 
 
