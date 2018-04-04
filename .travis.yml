@@ -10,8 +10,14 @@ matrix:
       env: TOXENV=py36
 
 install:
-  - "pip install tox"
-
+  - pip install tox bumpversion twine
 
 script:
   - tox
+
+after_success:
+  # push tag as well
+  - if [[ $TRAVIS_TAG = $TRAVIS_BRANCH ]]; then
+      python setup.py sdist bdist_wheel ;
+      twine upload dist/* ;
+    fi

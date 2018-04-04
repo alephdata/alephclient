@@ -16,13 +16,13 @@ class TestCrawldir(object):
         mocker.patch.object(self.api, "create_collection")
         mocker.patch.object(self.api, "ingest_upload")
         crawl_dir(self.api, "alephclient/tests/testdata", "test153")
-        self.api.create_collection.assert_called_once_with(
-            data={'category': 'other',
-                  'foreign_id': 'test153',
-                  'label': 'test153',
-                  'languages': [],
-                  'managed': True}
-        )
+        self.api.create_collection.assert_called_once_with({
+            'category': 'other',
+            'foreign_id': 'test153',
+            'label': 'test153',
+            'languages': [],
+            'managed': True
+        })
 
     def test_ingest(self, mocker):
         mocker.patch.object(self.api, "filter_collections", return_value=[{
