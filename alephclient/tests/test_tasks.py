@@ -14,6 +14,7 @@ class TestCrawldir(object):
     def test_new_collection(self, mocker):
         mocker.patch.object(self.api, "filter_collections", return_value=[])
         mocker.patch.object(self.api, "create_collection")
+        mocker.patch.object(self.api, "update_collection")
         mocker.patch.object(self.api, "ingest_upload")
         crawl_dir(self.api, "alephclient/tests/testdata", "test153", {})
         self.api.create_collection.assert_called_once_with({
@@ -30,6 +31,7 @@ class TestCrawldir(object):
             "id": 2
         }])
         mocker.patch.object(self.api, "ingest_upload")
+        mocker.patch.object(self.api, "update_collection")
         crawl_dir(self.api, "alephclient/tests/testdata", "test153", {})
         assert self.api.ingest_upload.call_count == 5
         expected_calls = [
