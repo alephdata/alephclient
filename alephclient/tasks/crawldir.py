@@ -2,6 +2,8 @@ import os
 import logging
 from banal import decode_path
 
+from alephclient.tasks.util import load_collection
+
 log = logging.getLogger(__name__)
 
 
@@ -43,23 +45,7 @@ def _crawl_path(api, collection_id, languages, root_path, path):
         log.exception('Upload failed.')
 
 
-def _load_collection(api, foreign_id, languages=None):
-    collections = api.filter_collections(filters=[('foreign_id', foreign_id)])
-    for collection in collections:
-        return collection.get('id')
-
-    data = {
-        'foreign_id': foreign_id,
-        'label': foreign_id,
-        'managed': True,
-        'category': 'other',
-        'languages': languages
-    }
-    collection = api.create_collection(data)
-    return collection.get('id')
-
-
-def crawl_dir(api, path, foreign_id, languages=None):
+def crawl_dir(api, path, foreign_id, config):
     """Crawl a directory and upload its content to a collection
 
     params
@@ -68,7 +54,7 @@ def crawl_dir(api, path, foreign_id, languages=None):
     foreign_id: foreign_id of the collection to use.
     language: language hint for the documents
     """
-    languages = languages or []
     path = decode_path(os.path.abspath(os.path.normpath(path)))
-    collection_id = _load_collection(api, foreign_id, languages=languages)
+    collection_id = load_collection(api, foreign_id, config)
+    languages = config.get('languages', [])
     _crawl_path(api, collection_id, languages, path, path)
