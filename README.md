@@ -28,11 +28,11 @@ Commands
 
 The crawldir command crawls through a given directory recursively and uploads
 all the files and directories inside it to a collection. The foreign id of the
-collection needs to be passed to the command with `--foreign-id` option. If a
-new collection has to be created for the given foreign id, then we also need to
-pass a category name with `--category` option. Optionally, language and country
-hint can be passed with `--language` and `--country` options. The `path` argument
-needs to be a valid path to a directory
+collection needs to be passed to the command with `--foreign-id` option. The
+language used in the directory can optionally be specified with the --language
+option, which expects a 2-letter ISO 639 language code. It can be specified
+multiple times, for when the directory contains files in more than one language.
+The `path` argument needs to be a valid path to a directory
 
 example:
 ```

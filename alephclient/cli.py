@@ -30,7 +30,9 @@ def cli(ctx, api_base_url, api_key):
 @cli.command()
 @click.option('--casefile', is_flag=True, default=False,
               help="handle as case file")
-@click.option('--language', multiple=True, help="language hint")
+@click.option('--language',
+              multiple=True,
+              help="language hint: 2-letter language code (ISO 639)")
 @click.option('--foreign-id',
               required=True,
               help="foreign_id of the collection")
