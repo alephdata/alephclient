@@ -1,17 +1,16 @@
 import logging
-
 import click
+from pathlib import Path
 from requests.exceptions import HTTPError
 
-from .api import AlephAPI
-from .tasks import crawl_dir, bulk_load
+from alephclient.api import AlephAPI
+from alephclient.tasks import crawl_dir, bulk_load
 
 log = logging.getLogger(__name__)
 
 
 @click.group()
-@click.option('--api-base-url', help="Aleph API address", envvar="ALEPH_HOST",
-              default="http://127.0.0.1:5000/api/2/")
+@click.option('--api-base-url', help="Aleph API address", envvar="ALEPH_HOST")
 @click.option("--api-key", envvar="ALEPH_API_KEY",
               help="Aleph API key for authentication")
 @click.pass_context
@@ -35,17 +34,19 @@ def cli(ctx, api_base_url, api_key):
 @click.option('--foreign-id',
               required=True,
               help="foreign_id of the collection")
-@click.argument('path')
+@click.argument('path', type=click.Path(exists=True))
 @click.pass_context
 def crawldir(ctx, path, foreign_id, language=None, casefile=False):
     """Crawl a directory recursively and upload the documents in it to a
     collection."""
+    path = Path(path)
     config = {
-        'label': path,
+        'label': path.name,
         'languages': language,
         'casefile': casefile
     }
-    crawl_dir(ctx.obj["api"], path, foreign_id, config)
+    api = ctx.obj["api"]
+    crawl_dir(api, path, foreign_id, config)
 
 
 @cli.command()

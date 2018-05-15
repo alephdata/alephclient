@@ -1,8 +1,8 @@
 from __future__ import unicode_literals
 import os
 
-from ..tasks import crawl_dir
-from ..api import AlephAPI
+from alephclient.tasks import crawl_dir
+from alephclient.api import AlephAPI
 
 
 class TestCrawldir(object):
