@@ -1,6 +1,5 @@
 import logging
 import click
-from pathlib import Path
 from requests.exceptions import HTTPError
 
 from alephclient.api import AlephAPI
@@ -41,7 +40,6 @@ def cli(ctx, api_base_url, api_key):
 def crawldir(ctx, path, foreign_id, language=None, casefile=False):
     """Crawl a directory recursively and upload the documents in it to a
     collection."""
-    path = Path(path)
     config = {
         'label': path.name,
         'languages': language,

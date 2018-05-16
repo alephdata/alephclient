@@ -1,3 +1,11 @@
+try:
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
+
+
+def to_path(path):
+    return Path(path).resolve()
 
 
 def load_collection(api, foreign_id, config):

@@ -3,6 +3,7 @@ import os
 
 from alephclient.tasks import crawl_dir
 from alephclient.api import AlephAPI
+from alephclient.tasks.util import to_path
 
 
 class TestCrawldir(object):
@@ -46,9 +47,9 @@ class TestCrawldir(object):
             ),
             mocker.call(
                 2,
-                os.path.join(os.path.abspath(
+                to_path(os.path.join(os.path.abspath(
                     "alephclient/tests/testdata"), "feb/2.txt"
-                ),
+                )),
                 metadata={
                     'parent': {
                         'foreign_id': 'feb'
@@ -81,9 +82,9 @@ class TestCrawldir(object):
             ),
             mocker.call(
                 2,
-                os.path.join(os.path.abspath(
+                to_path(os.path.join(os.path.abspath(
                     "alephclient/tests/testdata"), "jan/week1/1.txt"
-                ),
+                )),
                 metadata={
                     'parent': {
                         'foreign_id': 'jan/week1'
