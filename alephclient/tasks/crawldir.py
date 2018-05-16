@@ -56,7 +56,7 @@ def crawl_dir(api, path, foreign_id, config):
     foreign_id: foreign_id of the collection to use.
     language: language hint for the documents
     """
+    path = to_path(path)
     collection_id = load_collection(api, foreign_id, config)
     languages = config.get('languages', [])
-    path = to_path(path)
     _crawl_path(api, collection_id, languages, path, path)

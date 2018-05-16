@@ -41,7 +41,7 @@ def crawldir(ctx, path, foreign_id, language=None, casefile=False):
     """Crawl a directory recursively and upload the documents in it to a
     collection."""
     config = {
-        'label': path.name,
+        'label': path,
         'languages': language,
         'casefile': casefile
     }
