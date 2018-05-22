@@ -44,7 +44,7 @@ def _crawl_path(api, collection_id, languages, root_path, path):
                         root_path,
                         child)
     except Exception:
-        log.exception('Upload failed.')
+        log.exception('Failed [%s]: %s', collection_id, path)
 
 
 def crawl_dir(api, path, foreign_id, config):

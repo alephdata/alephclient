@@ -1,4 +1,3 @@
-import os
 import json
 from six.moves.urllib.parse import urlencode
 
@@ -7,6 +6,7 @@ from requests_toolbelt import MultipartEncoder
 
 
 class AlephAPI(object):
+
     def __init__(self, base_url, api_key):
         self.base_url = base_url
         self.api_key = api_key
@@ -88,35 +88,29 @@ class AlephAPI(object):
         url = self._make_url("collections/{0}/mapping".format(collection_id))
         return self._request("PUT", url, json=mapping)
 
-    def ingest_upload(self, collection_id, full_file_path=None, metadata=None):
+    def ingest_upload(self, collection_id, file_path=None, metadata=None):
         """
         Create an empty folder in a collection or upload a document to it
 
         params
         ------
         collection_id: id of the collection to upload to
-        full_file_path: path of the file to upload. None while creating folders
+        file_path: path of the file to upload. None while creating folders
         metadata: dict containing metadata for the file or folders. In case of
         files, metadata contains foreign_id of the parent. Metadata for a
         directory contains foreign_id for itself as well as its parent and the
         name of the directory.
         """
         url = self._make_url("collections/{0}/ingest".format(collection_id))
-        if full_file_path:
-            path = os.path.abspath(os.path.normpath(full_file_path))
-            if not os.path.isfile(path):
-                raise ValueError("{0} is not a valid file path".format(path))
-            with open(path, "rb") as fh:
-                name = os.path.basename(path)
-                # use multipart encoder to allow uploading very large files
-                m = MultipartEncoder(fields={
-                    'meta': json.dumps(metadata),
-                    'files': (name, fh, 'application/octet-stream')
-                })
-                headers = {
-                    'Content-Type': m.content_type
-                }
-                return self._request("POST", url, data=m, headers=headers)
-        else:
+        if not file_path or file_path.is_dir():
             data = {"meta": json.dumps(metadata)}
             return self._request("POST", url, data=data)
+
+        with open(file_path, "rb") as fh:
+            # use multipart encoder to allow uploading very large files
+            m = MultipartEncoder(fields={
+                'meta': json.dumps(metadata),
+                'file': (file_path.name, fh, 'application/octet-stream')
+            })
+            headers = {'Content-Type': m.content_type}
+            return self._request("POST", url, data=m, headers=headers)
