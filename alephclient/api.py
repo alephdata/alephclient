@@ -106,7 +106,7 @@ class AlephAPI(object):
             data = {"meta": json.dumps(metadata)}
             return self._request("POST", url, data=data)
 
-        with open(file_path, "rb") as fh:
+        with file_path.open('rb') as fh:
             # use multipart encoder to allow uploading very large files
             m = MultipartEncoder(fields={
                 'meta': json.dumps(metadata),
