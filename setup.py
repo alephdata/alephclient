@@ -21,7 +21,7 @@ setup(
         'requests>=2.18.4',
         'requests_toolbelt>=0.8.0',
         'click>=6.7',
-        'normality>=0.6.2',
+        'normality>=0.6.1',
         'grpcio>=1.11.0',
         'pathlib2>=2.3.2'
     ],
