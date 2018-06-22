@@ -13,14 +13,16 @@ from google.protobuf import descriptor_pb2
 _sym_db = _symbol_database.Default()
 
 
+from alephclient.services import common_pb2 as alephclient_dot_services_dot_common__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='alephclient/services/entityextract.proto',
   package='alephservices',
   syntax='proto3',
-  serialized_pb=_b('\n(alephclient/services/entityextract.proto\x12\ralephservices\"\'\n\x04Text\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x11\n\tlanguages\x18\x02 \x03(\t\"\xb4\x01\n\x0f\x45xtractedEntity\x12\r\n\x05label\x18\x01 \x01(\t\x12\x0e\n\x06offset\x18\x02 \x01(\r\x12\x0e\n\x06length\x18\x03 \x01(\r\x12\x31\n\x04type\x18\x04 \x01(\x0e\x32#.alephservices.ExtractedEntity.Type\"?\n\x04Type\x12\n\n\x06PERSON\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x0b\n\x07\x43OMPANY\x10\x02\x12\x0c\n\x08LOCATION\x10\x03\x32Q\n\rEntityExtract\x12@\n\x07\x45xtract\x12\x13.alephservices.Text\x1a\x1e.alephservices.ExtractedEntity0\x01\x62\x06proto3')
-)
+  serialized_pb=_b('\n(alephclient/services/entityextract.proto\x12\ralephservices\x1a!alephclient/services/common.proto\"\xb4\x01\n\x0f\x45xtractedEntity\x12\r\n\x05label\x18\x01 \x01(\t\x12\x0e\n\x06offset\x18\x02 \x01(\r\x12\x0e\n\x06length\x18\x03 \x01(\r\x12\x31\n\x04type\x18\x04 \x01(\x0e\x32#.alephservices.ExtractedEntity.Type\"?\n\x04Type\x12\n\n\x06PERSON\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x0b\n\x07\x43OMPANY\x10\x02\x12\x0c\n\x08LOCATION\x10\x03\x32\x43\n\rEntityExtract\x12\x32\n\x07\x45xtract\x12\x05.Text\x1a\x1e.alephservices.ExtractedEntity0\x01\x62\x06proto3')
+  ,
+  dependencies=[alephclient_dot_services_dot_common__pb2.DESCRIPTOR,])
 
 
 
@@ -49,48 +51,10 @@ _EXTRACTEDENTITY_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=218,
-  serialized_end=281,
+  serialized_start=212,
+  serialized_end=275,
 )
 _sym_db.RegisterEnumDescriptor(_EXTRACTEDENTITY_TYPE)
-
-
-_TEXT = _descriptor.Descriptor(
-  name='Text',
-  full_name='alephservices.Text',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='text', full_name='alephservices.Text.text', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=_b("").decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='languages', full_name='alephservices.Text.languages', index=1,
-      number=2, type=9, cpp_type=9, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=59,
-  serialized_end=98,
-)
 
 
 _EXTRACTEDENTITY = _descriptor.Descriptor(
@@ -141,22 +105,14 @@ _EXTRACTEDENTITY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=101,
-  serialized_end=281,
+  serialized_start=95,
+  serialized_end=275,
 )
 
 _EXTRACTEDENTITY.fields_by_name['type'].enum_type = _EXTRACTEDENTITY_TYPE
 _EXTRACTEDENTITY_TYPE.containing_type = _EXTRACTEDENTITY
-DESCRIPTOR.message_types_by_name['Text'] = _TEXT
 DESCRIPTOR.message_types_by_name['ExtractedEntity'] = _EXTRACTEDENTITY
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
-
-Text = _reflection.GeneratedProtocolMessageType('Text', (_message.Message,), dict(
-  DESCRIPTOR = _TEXT,
-  __module__ = 'alephclient.services.entityextract_pb2'
-  # @@protoc_insertion_point(class_scope:alephservices.Text)
-  ))
-_sym_db.RegisterMessage(Text)
 
 ExtractedEntity = _reflection.GeneratedProtocolMessageType('ExtractedEntity', (_message.Message,), dict(
   DESCRIPTOR = _EXTRACTEDENTITY,
@@ -173,15 +129,15 @@ _ENTITYEXTRACT = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=283,
-  serialized_end=364,
+  serialized_start=277,
+  serialized_end=344,
   methods=[
   _descriptor.MethodDescriptor(
     name='Extract',
     full_name='alephservices.EntityExtract.Extract',
     index=0,
     containing_service=None,
-    input_type=_TEXT,
+    input_type=alephclient_dot_services_dot_common__pb2._TEXT,
     output_type=_EXTRACTEDENTITY,
     options=None,
   ),
