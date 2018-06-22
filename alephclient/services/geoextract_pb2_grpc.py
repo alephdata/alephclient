@@ -6,8 +6,8 @@ from alephclient.services import geoextract_pb2 as alephclient_dot_services_dot_
 
 
 class GeoExtractStub(object):
-  # missing associated documentation comment in .proto file
-  pass
+  """Try to guess to country of a given set of texts.
+  """
 
   def __init__(self, channel):
     """Constructor.
@@ -16,18 +16,18 @@ class GeoExtractStub(object):
       channel: A grpc.Channel.
     """
     self.ExtractCountries = channel.stream_unary(
-        '/alephservices.GeoExtract/ExtractCountries',
+        '/GeoExtract/ExtractCountries',
         request_serializer=alephclient_dot_services_dot_common__pb2.Text.SerializeToString,
         response_deserializer=alephclient_dot_services_dot_geoextract__pb2.CountryTags.FromString,
         )
 
 
 class GeoExtractServicer(object):
-  # missing associated documentation comment in .proto file
-  pass
+  """Try to guess to country of a given set of texts.
+  """
 
   def ExtractCountries(self, request_iterator, context):
-    """Extract entities from the given text.
+    """Return a set of candidate countries.
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
@@ -43,5 +43,5 @@ def add_GeoExtractServicer_to_server(servicer, server):
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
-      'alephservices.GeoExtract', rpc_method_handlers)
+      'GeoExtract', rpc_method_handlers)
   server.add_generic_rpc_handlers((generic_handler,))

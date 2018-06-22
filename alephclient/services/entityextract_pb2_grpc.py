@@ -18,7 +18,7 @@ class EntityExtractStub(object):
       channel: A grpc.Channel.
     """
     self.Extract = channel.unary_stream(
-        '/alephservices.EntityExtract/Extract',
+        '/EntityExtract/Extract',
         request_serializer=alephclient_dot_services_dot_common__pb2.Text.SerializeToString,
         response_deserializer=alephclient_dot_services_dot_entityextract__pb2.ExtractedEntity.FromString,
         )
@@ -47,5 +47,5 @@ def add_EntityExtractServicer_to_server(servicer, server):
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
-      'alephservices.EntityExtract', rpc_method_handlers)
+      'EntityExtract', rpc_method_handlers)
   server.add_generic_rpc_handlers((generic_handler,))

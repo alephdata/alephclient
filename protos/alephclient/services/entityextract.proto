@@ -1,8 +1,6 @@
 syntax = "proto3";
 
 import "alephclient/services/common.proto";
-package alephclient;
-
 
 // The EntityService provides a simple extractor for NLP services that
 // accept a stream of text objects (with language metadata) and return
@@ -11,8 +9,6 @@ service EntityExtract {
     // Extract entities from the given text.
     rpc Extract (Text) returns (stream ExtractedEntity);
 }
-
-
 
 // An extracted entity, ie. a reference to a real-world person, company
 // or location. Includes type and offset information.

@@ -18,9 +18,9 @@ from alephclient.services import common_pb2 as alephclient_dot_services_dot_comm
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='alephclient/services/geoextract.proto',
-  package='alephservices',
+  package='',
   syntax='proto3',
-  serialized_pb=_b('\n%alephclient/services/geoextract.proto\x12\ralephservices\x1a!alephclient/services/common.proto\" \n\x0b\x43ountryTags\x12\x11\n\tcountries\x18\x01 \x03(\t2E\n\nGeoExtract\x12\x37\n\x10\x45xtractCountries\x12\x05.Text\x1a\x1a.alephservices.CountryTags(\x01\x62\x06proto3')
+  serialized_pb=_b('\n%alephclient/services/geoextract.proto\x1a!alephclient/services/common.proto\" \n\x0b\x43ountryTags\x12\x11\n\tcountries\x18\x01 \x03(\t27\n\nGeoExtract\x12)\n\x10\x45xtractCountries\x12\x05.Text\x1a\x0c.CountryTags(\x01\x62\x06proto3')
   ,
   dependencies=[alephclient_dot_services_dot_common__pb2.DESCRIPTOR,])
 
@@ -29,13 +29,13 @@ DESCRIPTOR = _descriptor.FileDescriptor(
 
 _COUNTRYTAGS = _descriptor.Descriptor(
   name='CountryTags',
-  full_name='alephservices.CountryTags',
+  full_name='CountryTags',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='countries', full_name='alephservices.CountryTags.countries', index=0,
+      name='countries', full_name='CountryTags.countries', index=0,
       number=1, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -53,8 +53,8 @@ _COUNTRYTAGS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=91,
-  serialized_end=123,
+  serialized_start=76,
+  serialized_end=108,
 )
 
 DESCRIPTOR.message_types_by_name['CountryTags'] = _COUNTRYTAGS
@@ -63,7 +63,7 @@ _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 CountryTags = _reflection.GeneratedProtocolMessageType('CountryTags', (_message.Message,), dict(
   DESCRIPTOR = _COUNTRYTAGS,
   __module__ = 'alephclient.services.geoextract_pb2'
-  # @@protoc_insertion_point(class_scope:alephservices.CountryTags)
+  # @@protoc_insertion_point(class_scope:CountryTags)
   ))
 _sym_db.RegisterMessage(CountryTags)
 
@@ -71,16 +71,16 @@ _sym_db.RegisterMessage(CountryTags)
 
 _GEOEXTRACT = _descriptor.ServiceDescriptor(
   name='GeoExtract',
-  full_name='alephservices.GeoExtract',
+  full_name='GeoExtract',
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=125,
-  serialized_end=194,
+  serialized_start=110,
+  serialized_end=165,
   methods=[
   _descriptor.MethodDescriptor(
     name='ExtractCountries',
-    full_name='alephservices.GeoExtract.ExtractCountries',
+    full_name='GeoExtract.ExtractCountries',
     index=0,
     containing_service=None,
     input_type=alephclient_dot_services_dot_common__pb2._TEXT,

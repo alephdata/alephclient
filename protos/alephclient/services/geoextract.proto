@@ -1,12 +1,10 @@
 syntax = "proto3";
 
 import "alephclient/services/common.proto";
-package alephclient;
 
-
-
+// Try to guess to country of a given set of texts.
 service GeoExtract {
-    // Extract entities from the given text.
+    // Return a set of candidate countries.
     rpc ExtractCountries (stream Text) returns (CountryTags);
 }
 
