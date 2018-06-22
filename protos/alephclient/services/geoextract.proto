@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "alephclient/services/common.proto";
+package alephclient;
+
+
+
+service GeoExtract {
+    // Extract entities from the given text.
+    rpc ExtractCountries (stream Text) returns (CountryTags);
+}
+
+message CountryTags {
+    repeated string countries = 1;
+}
