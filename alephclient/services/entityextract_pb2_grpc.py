@@ -17,10 +17,10 @@ class EntityExtractStub(object):
     Args:
       channel: A grpc.Channel.
     """
-    self.Extract = channel.unary_stream(
+    self.Extract = channel.stream_unary(
         '/EntityExtract/Extract',
         request_serializer=alephclient_dot_services_dot_common__pb2.Text.SerializeToString,
-        response_deserializer=alephclient_dot_services_dot_entityextract__pb2.ExtractedEntity.FromString,
+        response_deserializer=alephclient_dot_services_dot_entityextract__pb2.ExtractedEntitySet.FromString,
         )
 
 
@@ -30,7 +30,7 @@ class EntityExtractServicer(object):
   a set of entities extracted from the source text.
   """
 
-  def Extract(self, request, context):
+  def Extract(self, request_iterator, context):
     """Extract entities from the given text.
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -40,10 +40,10 @@ class EntityExtractServicer(object):
 
 def add_EntityExtractServicer_to_server(servicer, server):
   rpc_method_handlers = {
-      'Extract': grpc.unary_stream_rpc_method_handler(
+      'Extract': grpc.stream_unary_rpc_method_handler(
           servicer.Extract,
           request_deserializer=alephclient_dot_services_dot_common__pb2.Text.FromString,
-          response_serializer=alephclient_dot_services_dot_entityextract__pb2.ExtractedEntity.SerializeToString,
+          response_serializer=alephclient_dot_services_dot_entityextract__pb2.ExtractedEntitySet.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
