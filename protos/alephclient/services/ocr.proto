@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+import "alephclient/services/common.proto";
+
+// Request OCR to be performed on the given image of a
+// piece of text.
+service RecognizeText {
+    rpc Recognize (Image) returns (Text);
+}
+
+message Image {
+    bytes data = 1;
+
+    // An array of possible languages.
+    repeated string languages = 2;
+
+    // OCR mode
+    enum Mode {
+        PAGE = 0;
+        WORD = 1;
+        CHARACTER = 2;
+    }
+    Mode mode = 3;
+}
