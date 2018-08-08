@@ -34,7 +34,8 @@ class AlephAPI(object):
             method=method, url=url, headers=headers, **kwargs
         )
         response.raise_for_status()
-        return response.json()
+        if len(response.text):
+            return response.json()
 
     def get_collection(self, collection_id):
         url = self._make_url("collections/{0}".format(collection_id))
