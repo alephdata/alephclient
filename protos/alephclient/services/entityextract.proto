@@ -20,6 +20,10 @@ message ExtractedEntity {
         ORGANIZATION = 1;
         COMPANY = 2;
         LOCATION = 3;
+        IPADDRESS = 4;
+        PHONE = 5;
+        EMAIL = 6;
+        IBAN = 7;
     }
     Type type = 5;
 }
