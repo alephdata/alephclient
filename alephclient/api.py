@@ -1,5 +1,5 @@
 import json
-from six.moves.urllib.parse import urlencode
+from six.moves.urllib.parse import urlencode, urljoin
 
 import requests
 from requests_toolbelt import MultipartEncoder
@@ -8,7 +8,7 @@ from requests_toolbelt import MultipartEncoder
 class AlephAPI(object):
 
     def __init__(self, base_url, api_key):
-        self.base_url = base_url
+        self.base_url = urljoin(base_url, '/api/2/')
         self.api_key = api_key
 
     def _make_url(self, path, query=None, filters=None, **kwargs):
@@ -53,7 +53,9 @@ class AlephAPI(object):
         if not query and not filters:
             raise ValueError("One of query or filters is required")
         url = self._make_url("collections", filters=filters, **kwargs)
-        return self._request("GET", url)["results"]
+        res = self._request("GET", url)
+        if res is not None:
+            return res.get("results", [])
 
     def create_collection(self, data):
         """Create a collection from the given data.
