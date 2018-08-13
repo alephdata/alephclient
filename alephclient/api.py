@@ -7,9 +7,10 @@ from requests_toolbelt import MultipartEncoder
 
 class AlephAPI(object):
 
-    def __init__(self, base_url, api_key):
+    def __init__(self, base_url, api_key, session_id=None):
         self.base_url = urljoin(base_url, '/api/2/')
         self.api_key = api_key
+        self.session_id = session_id
 
     def _make_url(self, path, query=None, filters=None, **kwargs):
         """Construct the target url from given args"""
@@ -30,6 +31,8 @@ class AlephAPI(object):
         """
         headers = kwargs.pop("headers", {})
         headers["Authorization"] = "ApiKey " + self.api_key
+        if self.session_id is not None:
+            headers["X-Aleph-Session"] = self.session_id
         response = requests.request(
             method=method, url=url, headers=headers, **kwargs
         )
