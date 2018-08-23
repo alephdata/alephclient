@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='alephclient/services/common.proto',
   package='',
   syntax='proto3',
-  serialized_pb=_b('\n!alephclient/services/common.proto\"\'\n\x04Text\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x11\n\tlanguages\x18\x02 \x03(\tb\x06proto3')
+  serialized_pb=_b('\n!alephclient/services/common.proto\":\n\x04Text\x12\x0c\n\x04text\x18\x01 \x01(\t\x12\x11\n\tlanguages\x18\x02 \x03(\t\x12\x11\n\tcountries\x18\x03 \x03(\tb\x06proto3')
 )
 
 
@@ -46,6 +46,13 @@ _TEXT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='countries', full_name='Text.countries', index=2,
+      number=3, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -59,7 +66,7 @@ _TEXT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=37,
-  serialized_end=76,
+  serialized_end=95,
 )
 
 DESCRIPTOR.message_types_by_name['Text'] = _TEXT

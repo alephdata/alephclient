@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='alephclient/services/ocr.proto',
   package='',
   syntax='proto3',
-  serialized_pb=_b('\n\x1e\x61lephclient/services/ocr.proto\x1a!alephclient/services/common.proto\"n\n\x05Image\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c\x12\x11\n\tlanguages\x18\x02 \x03(\t\x12\x19\n\x04mode\x18\x03 \x01(\x0e\x32\x0b.Image.Mode\")\n\x04Mode\x12\x08\n\x04PAGE\x10\x00\x12\x08\n\x04WORD\x10\x01\x12\r\n\tCHARACTER\x10\x02\x32+\n\rRecognizeText\x12\x1a\n\tRecognize\x12\x06.Image\x1a\x05.Textb\x06proto3')
+  serialized_pb=_b('\n\x1e\x61lephclient/services/ocr.proto\x1a!alephclient/services/common.proto\"y\n\x05Image\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c\x12\x11\n\tlanguages\x18\x02 \x03(\t\x12\x19\n\x04mode\x18\x03 \x01(\x0e\x32\x0b.Image.Mode\"4\n\x04Mode\x12\t\n\x05OTHER\x10\x00\x12\x08\n\x04PAGE\x10\x01\x12\x08\n\x04WORD\x10\x02\x12\r\n\tCHARACTER\x10\x03\x32+\n\rRecognizeText\x12\x1a\n\tRecognize\x12\x06.Image\x1a\x05.Textb\x06proto3')
   ,
   dependencies=[alephclient_dot_services_dot_common__pb2.DESCRIPTOR,])
 
@@ -33,22 +33,26 @@ _IMAGE_MODE = _descriptor.EnumDescriptor(
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='PAGE', index=0, number=0,
+      name='OTHER', index=0, number=0,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='WORD', index=1, number=1,
+      name='PAGE', index=1, number=1,
       options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='CHARACTER', index=2, number=2,
+      name='WORD', index=2, number=2,
+      options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='CHARACTER', index=3, number=3,
       options=None,
       type=None),
   ],
   containing_type=None,
   options=None,
   serialized_start=138,
-  serialized_end=179,
+  serialized_end=190,
 )
 _sym_db.RegisterEnumDescriptor(_IMAGE_MODE)
 
@@ -95,7 +99,7 @@ _IMAGE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=69,
-  serialized_end=179,
+  serialized_end=190,
 )
 
 _IMAGE.fields_by_name['mode'].enum_type = _IMAGE_MODE
@@ -118,8 +122,8 @@ _RECOGNIZETEXT = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=181,
-  serialized_end=224,
+  serialized_start=192,
+  serialized_end=235,
   methods=[
   _descriptor.MethodDescriptor(
     name='Recognize',

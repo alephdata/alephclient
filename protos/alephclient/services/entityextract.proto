@@ -14,19 +14,21 @@ service EntityExtract {
 // or location. Includes type and offset information.
 message ExtractedEntity {
     string label = 1;
-    float weight = 4;
+    float weight = 2;
     enum Type {
-        PERSON = 0;
-        ORGANIZATION = 1;
-        COMPANY = 2;
-        LOCATION = 3;
-        COUNTRY = 4;
-        IPADDRESS = 5;
-        PHONE = 6;
-        EMAIL = 7;
-        IBAN = 8;
+        OTHER = 0;
+        PERSON = 1;
+        ORGANIZATION = 2;
+        COMPANY = 3;
+        LOCATION = 4;
+        COUNTRY = 5;
+        LANGUAGE = 6;
+        IPADDRESS = 7;
+        PHONE = 8;
+        EMAIL = 9;
+        IBAN = 10;
     }
-    Type type = 5;
+    Type type = 3;
 }
 
 message ExtractedEntitySet {

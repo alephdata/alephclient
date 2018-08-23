@@ -16,9 +16,10 @@ message Image {
 
     // OCR mode
     enum Mode {
-        PAGE = 0;
-        WORD = 1;
-        CHARACTER = 2;
+        OTHER = 0;
+        PAGE = 1;
+        WORD = 2;
+        CHARACTER = 3;
     }
     Mode mode = 3;
 }
