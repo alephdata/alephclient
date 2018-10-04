@@ -29,6 +29,8 @@ def cli(ctx, api_base_url, api_key):
 @cli.command()
 @click.option('--casefile', is_flag=True, default=False,
               help="handle as case file")
+@click.option('--resume', is_flag=True, default=False,
+              help="resume a failed crawl")
 @click.option('--language',
               multiple=True,
               help="language hint: 2-letter language code (ISO 639)")
@@ -37,13 +39,15 @@ def cli(ctx, api_base_url, api_key):
               help="foreign_id of the collection")
 @click.argument('path', type=click.Path(exists=True))
 @click.pass_context
-def crawldir(ctx, path, foreign_id, language=None, casefile=False):
+def crawldir(ctx, path, foreign_id, language=None,
+             casefile=False, resume=False):
     """Crawl a directory recursively and upload the documents in it to a
     collection."""
     config = {
         'label': path,
         'languages': language,
-        'casefile': casefile
+        'casefile': casefile,
+        'resume': resume,
     }
     api = ctx.obj["api"]
     crawl_dir(api, path, foreign_id, config)
