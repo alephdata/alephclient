@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='alephclient/services/entityextract.proto',
   package='',
   syntax='proto3',
-  serialized_pb=_b('\n(alephclient/services/entityextract.proto\x1a!alephclient/services/common.proto\"\xec\x01\n\x0f\x45xtractedEntity\x12\r\n\x05label\x18\x01 \x01(\t\x12\x0e\n\x06weight\x18\x02 \x01(\x02\x12#\n\x04type\x18\x03 \x01(\x0e\x32\x15.ExtractedEntity.Type\"\x94\x01\n\x04Type\x12\t\n\x05OTHER\x10\x00\x12\n\n\x06PERSON\x10\x01\x12\x10\n\x0cORGANIZATION\x10\x02\x12\x0b\n\x07\x43OMPANY\x10\x03\x12\x0c\n\x08LOCATION\x10\x04\x12\x0b\n\x07\x43OUNTRY\x10\x05\x12\x0c\n\x08LANGUAGE\x10\x06\x12\r\n\tIPADDRESS\x10\x07\x12\t\n\x05PHONE\x10\x08\x12\t\n\x05\x45MAIL\x10\t\x12\x08\n\x04IBAN\x10\n\"8\n\x12\x45xtractedEntitySet\x12\"\n\x08\x65ntities\x18\x01 \x03(\x0b\x32\x10.ExtractedEntity28\n\rEntityExtract\x12\'\n\x07\x45xtract\x12\x05.Text\x1a\x13.ExtractedEntitySet(\x01\x62\x06proto3')
+  serialized_pb=_b('\n(alephclient/services/entityextract.proto\x1a!alephclient/services/common.proto\"\xf7\x01\n\x0f\x45xtractedEntity\x12\x0c\n\x04text\x18\x01 \x01(\t\x12#\n\x04type\x18\x02 \x01(\x0e\x32\x15.ExtractedEntity.Type\x12\r\n\x05start\x18\x03 \x01(\x04\x12\x0b\n\x03\x65nd\x18\x04 \x01(\x04\"\x94\x01\n\x04Type\x12\t\n\x05OTHER\x10\x00\x12\n\n\x06PERSON\x10\x01\x12\x10\n\x0cORGANIZATION\x10\x02\x12\x0b\n\x07\x43OMPANY\x10\x03\x12\x0c\n\x08LOCATION\x10\x04\x12\x0b\n\x07\x43OUNTRY\x10\x05\x12\x0c\n\x08LANGUAGE\x10\x06\x12\r\n\tIPADDRESS\x10\x07\x12\t\n\x05PHONE\x10\x08\x12\t\n\x05\x45MAIL\x10\t\x12\x08\n\x04IBAN\x10\n25\n\rEntityExtract\x12$\n\x07\x45xtract\x12\x05.Text\x1a\x10.ExtractedEntity0\x01\x62\x06proto3')
   ,
   dependencies=[alephclient_dot_services_dot_common__pb2.DESCRIPTOR,])
 
@@ -79,8 +79,8 @@ _EXTRACTEDENTITY_TYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   options=None,
-  serialized_start=168,
-  serialized_end=316,
+  serialized_start=179,
+  serialized_end=327,
 )
 _sym_db.RegisterEnumDescriptor(_EXTRACTEDENTITY_TYPE)
 
@@ -93,22 +93,29 @@ _EXTRACTEDENTITY = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='label', full_name='ExtractedEntity.label', index=0,
+      name='text', full_name='ExtractedEntity.text', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='weight', full_name='ExtractedEntity.weight', index=1,
-      number=2, type=2, cpp_type=6, label=1,
-      has_default_value=False, default_value=float(0),
+      name='type', full_name='ExtractedEntity.type', index=1,
+      number=2, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='type', full_name='ExtractedEntity.type', index=2,
-      number=3, type=14, cpp_type=8, label=1,
+      name='start', full_name='ExtractedEntity.start', index=2,
+      number=3, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='end', full_name='ExtractedEntity.end', index=3,
+      number=4, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -127,45 +134,12 @@ _EXTRACTEDENTITY = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=80,
-  serialized_end=316,
-)
-
-
-_EXTRACTEDENTITYSET = _descriptor.Descriptor(
-  name='ExtractedEntitySet',
-  full_name='ExtractedEntitySet',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='entities', full_name='ExtractedEntitySet.entities', index=0,
-      number=1, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=318,
-  serialized_end=374,
+  serialized_end=327,
 )
 
 _EXTRACTEDENTITY.fields_by_name['type'].enum_type = _EXTRACTEDENTITY_TYPE
 _EXTRACTEDENTITY_TYPE.containing_type = _EXTRACTEDENTITY
-_EXTRACTEDENTITYSET.fields_by_name['entities'].message_type = _EXTRACTEDENTITY
 DESCRIPTOR.message_types_by_name['ExtractedEntity'] = _EXTRACTEDENTITY
-DESCRIPTOR.message_types_by_name['ExtractedEntitySet'] = _EXTRACTEDENTITYSET
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 ExtractedEntity = _reflection.GeneratedProtocolMessageType('ExtractedEntity', (_message.Message,), dict(
@@ -175,13 +149,6 @@ ExtractedEntity = _reflection.GeneratedProtocolMessageType('ExtractedEntity', (_
   ))
 _sym_db.RegisterMessage(ExtractedEntity)
 
-ExtractedEntitySet = _reflection.GeneratedProtocolMessageType('ExtractedEntitySet', (_message.Message,), dict(
-  DESCRIPTOR = _EXTRACTEDENTITYSET,
-  __module__ = 'alephclient.services.entityextract_pb2'
-  # @@protoc_insertion_point(class_scope:ExtractedEntitySet)
-  ))
-_sym_db.RegisterMessage(ExtractedEntitySet)
-
 
 
 _ENTITYEXTRACT = _descriptor.ServiceDescriptor(
@@ -190,8 +157,8 @@ _ENTITYEXTRACT = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=376,
-  serialized_end=432,
+  serialized_start=329,
+  serialized_end=382,
   methods=[
   _descriptor.MethodDescriptor(
     name='Extract',
@@ -199,7 +166,7 @@ _ENTITYEXTRACT = _descriptor.ServiceDescriptor(
     index=0,
     containing_service=None,
     input_type=alephclient_dot_services_dot_common__pb2._TEXT,
-    output_type=_EXTRACTEDENTITYSET,
+    output_type=_EXTRACTEDENTITY,
     options=None,
   ),
 ])

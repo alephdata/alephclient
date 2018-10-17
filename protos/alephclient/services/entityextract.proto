@@ -7,14 +7,13 @@ import "alephclient/services/common.proto";
 // a set of entities extracted from the source text.
 service EntityExtract {
     // Extract entities from the given text.
-    rpc Extract (stream Text) returns (ExtractedEntitySet);
+    rpc Extract (Text) returns (stream ExtractedEntity);
 }
 
 // An extracted entity, ie. a reference to a real-world person, company
 // or location. Includes type and offset information.
 message ExtractedEntity {
-    string label = 1;
-    float weight = 2;
+    string text = 1;
     enum Type {
         OTHER = 0;
         PERSON = 1;
@@ -28,9 +27,7 @@ message ExtractedEntity {
         EMAIL = 9;
         IBAN = 10;
     }
-    Type type = 3;
-}
-
-message ExtractedEntitySet {
-    repeated ExtractedEntity entities = 1;
+    Type type = 2;
+    uint64 start = 3;
+    uint64 end = 4;
 }
