@@ -1,6 +1,7 @@
 import logging
 
 from alephclient.tasks.util import load_collection, to_path
+from alephclient.errors import AlephException
 
 log = logging.getLogger(__name__)
 
@@ -43,6 +44,8 @@ def _crawl_path(api, collection_id, languages, root_path, path):
                         languages,
                         root_path,
                         child)
+    except AlephException as exc:
+        log.error(exc.message)
     except Exception:
         log.exception('Failed [%s]: %s', collection_id, path)
 

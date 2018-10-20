@@ -1,16 +1,21 @@
+import uuid
 import json
 from six.moves.urllib.parse import urlencode, urljoin
-
 import requests
 from requests_toolbelt import MultipartEncoder
+
+from alephclient.errors import AlephException
 
 
 class AlephAPI(object):
 
     def __init__(self, base_url, api_key, session_id=None):
         self.base_url = urljoin(base_url, '/api/2/')
-        self.api_key = api_key
-        self.session_id = session_id
+        self.session = requests.Session()
+        self.session.headers = {
+            'X-Aleph-Session': session_id or str(uuid.uuid4()),
+            'Authorization': 'ApiKey %s' % api_key
+        }
 
     def _make_url(self, path, query=None, filters=None, **kwargs):
         """Construct the target url from given args"""
@@ -29,13 +34,9 @@ class AlephAPI(object):
         successful and failed responses and possibly manage session etc
         conviniently in a single place.
         """
-        headers = kwargs.pop("headers", {})
-        headers["Authorization"] = "ApiKey " + self.api_key
-        if self.session_id is not None:
-            headers["X-Aleph-Session"] = self.session_id
-        response = requests.request(
-            method=method, url=url, headers=headers, **kwargs
-        )
+        response = self.session.request(method=method, url=url, **kwargs)
+        if response.status_code > 299:
+            raise AlephException(response)
         response.raise_for_status()
         if len(response.text):
             return response.json()
@@ -93,6 +94,9 @@ class AlephAPI(object):
         """
         url = self._make_url("collections/{0}/mapping".format(collection_id))
         return self._request("PUT", url, json=mapping)
+
+    # def stream_entities(self, collection_id):
+    #     pass
 
     def ingest_upload(self, collection_id, file_path=None, metadata=None):
         """

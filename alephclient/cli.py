@@ -4,6 +4,7 @@ from requests.exceptions import HTTPError
 
 from alephclient.api import AlephAPI
 from alephclient.tasks import crawl_dir, bulk_load
+from alephclient.errors import AlephException
 
 log = logging.getLogger(__name__)
 
@@ -53,15 +54,11 @@ def crawldir(ctx, path, foreign_id, language=None, casefile=False):
 @click.argument('mapping_file')
 @click.pass_context
 def bulkload(ctx, mapping_file):
-    """Trigger a load of structured entity data using the submitted mapping."""    
+    """Trigger a load of structured entity data using the submitted mapping."""
     try:
         bulk_load(ctx.obj["api"], mapping_file)
-    except HTTPError as httperr:
-        resp = httperr.response
-        try:
-            log.error('Error: %s', resp.json().get('message'))
-        except Exception:
-            log.error('Error: %s', resp.text)
+    except AlephException as exc:
+        log.error("Error: %s", exc.message)
 
 
 if __name__ == "__main__":
