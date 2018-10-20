@@ -45,6 +45,12 @@ class AlephAPI(object):
         url = self._make_url("collections/{0}".format(collection_id))
         return self._request("GET", url)
 
+    def get_collection_by_foreign_id(self, foreign_id):
+        filters = [('foreign_id', foreign_id)]
+        for coll in self.filter_collections(filters=filters, limit=1):
+            if coll.get('foreign_id') == foreign_id:
+                return coll
+
     def filter_collections(self, query=None, filters=None, **kwargs):
         """Filter collections for the given query and/or filters.
 
@@ -95,8 +101,15 @@ class AlephAPI(object):
         url = self._make_url("collections/{0}/mapping".format(collection_id))
         return self._request("PUT", url, json=mapping)
 
-    # def stream_entities(self, collection_id):
-    #     pass
+    def stream_entities(self, collection_id=None, include=None):
+        url = urljoin(self.base_url, 'entities/_stream')
+        if collection_id is not None:
+            url = 'collections/%s/_stream' % collection_id
+            url = urljoin(self.base_url, url)
+        params = {'include': include}
+        res = self.session.get(url, params=params, stream=True)
+        for line in res.iter_lines():
+            yield json.loads(line)
 
     def ingest_upload(self, collection_id, file_path=None, metadata=None):
         """

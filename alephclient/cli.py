@@ -1,6 +1,5 @@
 import logging
 import click
-from requests.exceptions import HTTPError
 
 from alephclient.api import AlephAPI
 from alephclient.tasks import crawl_dir, bulk_load
