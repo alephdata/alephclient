@@ -5,11 +5,12 @@ class AlephException(Exception):
     def __init__(self, response):
         self.status = response.status_code
         self.response = response
-        if response.is_json():
+        try:
+            data = response.json()
             data = response.json()
             self.status = data.get('status')
             self.message = data.get('message')
-        else:
+        except Exception:
             self.message = response.content
 
     def __str__(self):
