@@ -19,7 +19,7 @@ setup(
         'banal',
         'pyyaml',
         'requests >= 2.20.0',
-        'requests_toolbelt >= 0.8.1',
+        'requests_toolbelt >= 0.8.0',
         'click >= 6.7',
         'normality >= 0.6.1',
         'grpcio >= 1.11.0',
