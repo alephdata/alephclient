@@ -15,15 +15,15 @@ setup(
     ],
     packages=find_packages(exclude=['alephclient.tests']),
     install_requires=[
-        'six>=1.11.0',
+        'six >= 1.11.0',
         'banal',
         'pyyaml',
-        'requests>=2.18.4',
-        'requests_toolbelt>=0.8.0',
-        'click>=6.7',
-        'normality>=0.6.1',
-        'grpcio>=1.11.0',
-        'pathlib2>=2.3.2'
+        'requests >= 2.20.0',
+        'requests_toolbelt >= 0.8.0',
+        'click >= 6.7',
+        'normality >= 0.6.1',
+        'grpcio >= 1.11.0',
+        'pathlib2 >= 2.3.2'
     ],
     extras_require={
         # ':python_version < "3.4"': [

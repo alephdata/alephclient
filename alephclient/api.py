@@ -1,7 +1,7 @@
 import uuid
 import json
-from six.moves.urllib.parse import urlencode, urljoin
 import requests
+from six.moves.urllib.parse import urlencode, urljoin
 from requests_toolbelt import MultipartEncoder
 
 from alephclient.errors import AlephException
