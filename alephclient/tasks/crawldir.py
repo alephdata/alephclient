@@ -1,10 +1,17 @@
 import logging
+import queue
+import time
+import threading
+import multiprocessing
 
 from alephclient.tasks.util import load_collection, to_path
 from alephclient.errors import AlephException
 
 log = logging.getLogger(__name__)
 
+THREADS = 5 * multiprocessing.cpu_count()
+TIMEOUT = 5
+MAX_TRIES = 3
 
 def _get_foreign_id(root_path, path):
     if path == root_path:
@@ -32,22 +39,28 @@ def _upload_path(api, collection_id, languages, root_path, path):
     api.ingest_upload(collection_id, file_path, metadata=metadata)
 
 
-def _crawl_path(api, collection_id, languages, root_path, path):
-    try:
-        _upload_path(api, collection_id, languages, root_path, path)
-        if not path.is_dir():
-            return
+def _crawl_path(q, api, collection_id, languages, root_path, path):
+    _upload_path(api, collection_id, languages, root_path, path)
+    if not path.is_dir():
+        return
+    for child in path.iterdir():
+        q.put((child, 1))
 
-        for child in path.iterdir():
-            _crawl_path(api,
-                        collection_id,
-                        languages,
-                        root_path,
-                        child)
-    except AlephException as exc:
-        log.error(exc.message)
-    except Exception:
-        log.exception('Failed [%s]: %s', collection_id, path)
+
+def _upload(q, api, collection_id, languages, root_path):
+    while not q.empty():
+        path, try_number = q.get()
+        try:
+            _crawl_path(q, api, collection_id, languages, root_path, path)
+        except AlephException as exc:
+            if exc.status >= 500 and try_number < MAX_TRIES:
+                time.sleep(TIMEOUT * try_number)
+                q.put((path, try_number + 1))
+            else:
+                log.error(exc.message)
+        except Exception:
+            log.exception('Failed [%s]: %s', collection_id, path)
+        q.task_done()
 
 
 def crawl_dir(api, path, foreign_id, config):
@@ -62,4 +75,15 @@ def crawl_dir(api, path, foreign_id, config):
     path = to_path(path)
     collection_id = load_collection(api, foreign_id, config)
     languages = config.get('languages', [])
-    _crawl_path(api, collection_id, languages, path, path)
+    q = queue.Queue(maxsize=THREADS)
+    q.put((path, 1))
+    threads = []
+    for i in range(THREADS):
+        t = threading.Thread(target=_upload, args=(q, api, collection_id, languages, path))
+        t.daemon = True
+        t.start()
+        threads.append(t)
+    # block until all tasks are done
+    q.join()
+    for t in threads:
+        t.join()
