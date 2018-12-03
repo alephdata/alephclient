@@ -1,5 +1,4 @@
 import logging
-import concurrent.futures
 
 from alephclient.tasks.util import load_collection, to_path
 from alephclient.errors import AlephException
@@ -36,18 +35,19 @@ def _upload_path(api, collection_id, languages, root_path, path):
 def _crawl_path(api, collection_id, languages, root_path, path):
     try:
         _upload_path(api, collection_id, languages, root_path, path)
+        if not path.is_dir():
+            return
+
+        for child in path.iterdir():
+            _crawl_path(api,
+                        collection_id,
+                        languages,
+                        root_path,
+                        child)
     except AlephException as exc:
         log.error(exc.message)
     except Exception:
         log.exception('Failed [%s]: %s', collection_id, path)
-
-
-def _get_path_list(root_path, path_list):
-    if root_path.is_dir():
-        for child in root_path.iterdir():
-            path_list.append(child)
-            path_list = _get_path_list(child, path_list)
-    return path_list
 
 
 def crawl_dir(api, path, foreign_id, config):
@@ -59,13 +59,7 @@ def crawl_dir(api, path, foreign_id, config):
     foreign_id: foreign_id of the collection to use.
     language: language hint for the documents
     """
-    root_path = to_path(path)
+    path = to_path(path)
     collection_id = load_collection(api, foreign_id, config)
     languages = config.get('languages', [])
-    paths = [root_path,]
-    paths = _get_path_list(root_path, paths)
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        for path in paths:
-            executor.submit(
-                _crawl_path, api, collection_id, languages, root_path, path
-            )
+    _crawl_path(api, collection_id, languages, path, path)
