@@ -3,15 +3,16 @@ import queue
 import time
 import threading
 import multiprocessing
+import os
 
 from alephclient.tasks.util import load_collection, to_path
 from alephclient.errors import AlephException
 
 log = logging.getLogger(__name__)
 
-THREADS = 5 * multiprocessing.cpu_count()
-TIMEOUT = 5
-MAX_TRIES = 3
+THREADS = int(os.getenv("ALEPHCLIENT_THREADS", 5 * multiprocessing.cpu_count()))  # noqa
+TIMEOUT = int(os.getenv("ALEPHCLIENT_TIMEOUT", 5))
+MAX_TRIES = int(os.getenv("ALEPHCLIENT_MAX_TRIES", 3))
 
 def _get_foreign_id(root_path, path):
     if path == root_path:
@@ -75,7 +76,7 @@ def crawl_dir(api, path, foreign_id, config):
     path = to_path(path)
     collection_id = load_collection(api, foreign_id, config)
     languages = config.get('languages', [])
-    q = queue.Queue(maxsize=THREADS)
+    q = queue.Queue()
     q.put((path, 1))
     threads = []
     for i in range(THREADS):
