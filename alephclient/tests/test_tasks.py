@@ -95,4 +95,5 @@ class TestCrawldir(object):
                 }
             ),
         ]
-        assert self.api.ingest_upload.mock_calls == expected_calls
+        for call in expected_calls:
+            assert call in self.api.ingest_upload.mock_calls
