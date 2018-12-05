@@ -47,6 +47,15 @@ class TestCrawldir(object):
             ),
             mocker.call(
                 2,
+                None,
+                metadata={
+                    'foreign_id': 'jan',
+                    'file_name': 'jan',
+                    'languages': []
+                }
+            ),
+            mocker.call(
+                2,
                 to_path(os.path.join(os.path.abspath(
                     "alephclient/tests/testdata"), "feb/2.txt"
                 )),
@@ -56,15 +65,6 @@ class TestCrawldir(object):
                     },
                     'foreign_id': 'feb/2.txt',
                     'file_name': '2.txt',
-                    'languages': []
-                }
-            ),
-            mocker.call(
-                2,
-                None,
-                metadata={
-                    'foreign_id': 'jan',
-                    'file_name': 'jan',
                     'languages': []
                 }
             ),
@@ -95,4 +95,5 @@ class TestCrawldir(object):
                 }
             ),
         ]
-        assert self.api.ingest_upload.mock_calls == expected_calls
+        for call in expected_calls:
+            assert call in self.api.ingest_upload.mock_calls
