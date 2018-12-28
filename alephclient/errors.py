@@ -7,11 +7,10 @@ class AlephException(Exception):
         self.response = response
         try:
             data = response.json()
-            data = response.json()
             self.status = data.get('status')
             self.message = data.get('message')
         except Exception:
-            self.message = response.content
+            self.message = response.text
 
     def __str__(self):
-        return self.message or "Unknown Error"
+        return self.message
