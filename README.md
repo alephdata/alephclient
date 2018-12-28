@@ -5,10 +5,11 @@ the API, without direct access to the server. It requires an active API client
 to perform uploads.
 
 ## Installation
+
 Install using `pip`.
 
 ```bash
-pip install git+https://github.com/alephdata/alephclient
+pip install alephclient
 ```
 
 ## Usage

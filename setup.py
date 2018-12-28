@@ -4,7 +4,7 @@ setup(
     name='alephclient',
     version='0.8.4',
     description='Command-line client for Aleph API',
-    author='Journalism Development Network',
+    author='Organized Crime and Corruption Reporting Project',
     author_email='data@occrp.org',
     url='http://github.com/alephdata/alephclient',
     license='MIT',
@@ -18,7 +18,7 @@ setup(
     ],
     packages=find_packages(exclude=['alephclient.tests']),
     install_requires=[
-        'banal',
+        'banal >= 0.4.1',
         'pyyaml',
         'requests >= 2.20.0',
         'requests_toolbelt >= 0.8.0',
