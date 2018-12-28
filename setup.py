@@ -12,23 +12,21 @@ setup(
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7'
     ],
     packages=find_packages(exclude=['alephclient.tests']),
     install_requires=[
-        'six >= 1.11.0',
         'banal',
         'pyyaml',
         'requests >= 2.20.0',
         'requests_toolbelt >= 0.8.0',
         'click >= 6.7',
         'normality >= 0.6.1',
-        'grpcio >= 1.11.0',
-        'pathlib2 >= 2.3.2'
+        'grpcio >= 1.11.0'
     ],
     extras_require={
-        # ':python_version < "3.4"': [
-        #     'pathlib2>=2.3.2'
-        # ],
         'dev': [
             'pytest',
             'pytest-mock>=1.10.0',

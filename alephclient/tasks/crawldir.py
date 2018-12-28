@@ -1,11 +1,12 @@
-import logging
-import queue
+import os
 import time
+import queue
+import logging
 import threading
 import multiprocessing
-import os
+from pathlib import Path
 
-from alephclient.tasks.util import load_collection, to_path
+from alephclient.tasks.util import load_collection
 from alephclient.errors import AlephException
 
 log = logging.getLogger(__name__)
@@ -13,6 +14,7 @@ log = logging.getLogger(__name__)
 THREADS = int(os.getenv("ALEPHCLIENT_THREADS", 5 * multiprocessing.cpu_count()))  # noqa
 TIMEOUT = int(os.getenv("ALEPHCLIENT_TIMEOUT", 5))
 MAX_TRIES = int(os.getenv("ALEPHCLIENT_MAX_TRIES", 3))
+
 
 def _get_foreign_id(root_path, path):
     if path == root_path:
@@ -73,17 +75,19 @@ def crawl_dir(api, path, foreign_id, config):
     foreign_id: foreign_id of the collection to use.
     language: language hint for the documents
     """
-    path = to_path(path)
+    path = Path(path).resolve()
     collection_id = load_collection(api, foreign_id, config)
     languages = config.get('languages', [])
     q = queue.Queue()
     q.put((path, 1))
     threads = []
     for i in range(THREADS):
-        t = threading.Thread(target=_upload, args=(q, api, collection_id, languages, path))
+        args = (q, api, collection_id, languages, path)
+        t = threading.Thread(target=_upload, args=args)
         t.daemon = True
         t.start()
         threads.append(t)
+
     # block until all tasks are done
     q.join()
     for t in threads:

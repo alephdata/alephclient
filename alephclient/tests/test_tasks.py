@@ -1,9 +1,8 @@
-from __future__ import unicode_literals
 import os
+from pathlib import Path
 
 from alephclient.tasks import crawl_dir
 from alephclient.api import AlephAPI
-from alephclient.tasks.util import to_path
 
 
 class TestCrawldir(object):
@@ -56,7 +55,7 @@ class TestCrawldir(object):
             ),
             mocker.call(
                 2,
-                to_path(os.path.join(os.path.abspath(
+                Path(os.path.join(os.path.abspath(
                     "alephclient/tests/testdata"), "feb/2.txt"
                 )),
                 metadata={
@@ -82,7 +81,7 @@ class TestCrawldir(object):
             ),
             mocker.call(
                 2,
-                to_path(os.path.join(os.path.abspath(
+                Path(os.path.join(os.path.abspath(
                     "alephclient/tests/testdata"), "jan/week1/1.txt"
                 )),
                 metadata={

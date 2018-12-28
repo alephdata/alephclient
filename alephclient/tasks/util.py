@@ -1,14 +1,7 @@
 import os
 import yaml
 
-try:
-    from pathlib import Path
-except ImportError:
-    from pathlib2 import Path
-
-
-def to_path(path):
-    return Path(path).resolve()
+from banal import is_listish, is_mapping, ensure_list
 
 
 def load_collection(api, foreign_id, config):
@@ -47,12 +40,10 @@ def resolve_includes(file_path, data):
 
     This allows the YAML graph configuration to be broken into
     multiple smaller fragments that are easier to maintain."""
-    if isinstance(data, (list, tuple, set)):
-        data = [resolve_includes(file_path, i) for i in data]
-    elif isinstance(data, dict):
-        include_paths = data.pop('include', [])
-        if not isinstance(include_paths, (list, tuple, set)):
-            include_paths = [include_paths]
+    if is_listish(data):
+        return [resolve_includes(file_path, i) for i in data]
+    if is_mapping(data):
+        include_paths = ensure_list(data.pop('include', []))
         for include_path in include_paths:
             dir_prefix = os.path.dirname(file_path)
             include_path = os.path.join(dir_prefix, include_path)
