@@ -7,12 +7,10 @@ from banal import is_listish, is_mapping, ensure_list
 def load_collection(api, foreign_id, config):
     collections = api.filter_collections(filters=[('foreign_id', foreign_id)])
     for collection in collections:
-        casefile = collection.get('casefile')
-        collection['casefile'] = config.get('casefile', casefile)
         languages = config.get('languages', [])
         if len(languages):
             collection['languages'] = languages
-        api.update_collection(collection.get('id'), collection)
+            api.update_collection(collection.get('id'), collection)
         return collection.get('id')
 
     data = {

@@ -2,7 +2,9 @@ import logging
 import click
 
 from alephclient.api import AlephAPI
-from alephclient.tasks import crawl_dir, bulk_load
+from alephclient.tasks.crawldir import crawl_dir
+from alephclient.tasks.bulkload import bulk_load
+from alephclient.tasks.bulkwrite import bulk_write
 from alephclient.errors import AlephException
 
 log = logging.getLogger(__name__)
@@ -56,6 +58,20 @@ def bulkload(ctx, mapping_file):
     """Trigger a load of structured entity data using the submitted mapping."""
     try:
         bulk_load(ctx.obj["api"], mapping_file)
+    except AlephException as exc:
+        log.error("Error: %s", exc.message)
+
+
+@cli.command()
+@click.option('--foreign-id',
+              required=True,
+              help="foreign_id of the collection")
+@click.pass_context
+def bulkwrite(ctx, foreign_id):
+    """Read entities from standard input and index them."""
+    stdin = click.get_text_stream('stdin')
+    try:
+        bulk_write(ctx.obj["api"], stdin, foreign_id)
     except AlephException as exc:
         log.error("Error: %s", exc.message)
 

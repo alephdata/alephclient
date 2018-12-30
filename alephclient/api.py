@@ -1,6 +1,7 @@
 import uuid
 import json
 import requests
+from banal import ensure_list
 from urllib.parse import urlencode, urljoin
 from requests_toolbelt import MultipartEncoder
 
@@ -102,6 +103,13 @@ class AlephAPI(object):
         return self._request("PUT", url, json=mapping)
 
     def stream_entities(self, collection_id=None, include=None):
+        """Iterate over all entities in the given collection.
+
+        params
+        ------
+        collection_id: id of the collection to stream
+        include: an array of fields from the index to include.
+        """
         url = urljoin(self.base_url, 'entities/_stream')
         if collection_id is not None:
             url = 'collections/%s/_stream' % collection_id
@@ -110,6 +118,41 @@ class AlephAPI(object):
         res = self.session.get(url, params=params, stream=True)
         for line in res.iter_lines():
             yield json.loads(line)
+
+    def _bulk_chunk(self, collection_id, chunk):
+        url = 'collections/%s/_bulk' % collection_id
+        url = urljoin(self.base_url, url)
+        response = self.session.post(url, json=chunk)
+        if response.status_code > 299:
+            raise AlephException(response)
+
+    def bulk_write(self, collection_id, entities, chunk_size=1000):
+        """Create entities in bulk via the API, in the given
+        collection.
+
+        params
+        ------
+        collection_id: id of the collection to use
+        entities: an iterable of entities to upload
+        """
+        chunk = []
+        for entity in entities:
+            chunk.append(entity)
+            if len(chunk) >= chunk_size:
+                self._bulk_chunk(collection_id, chunk)
+                chunk = []
+        if len(chunk):
+            self._bulk_chunk(collection_id, chunk)
+
+    def match(self, entity, collection_ids=None):
+        """Find similar entities given a sample entity."""
+        params = {'collection_ids': ensure_list(collection_ids)}
+        url = urljoin(self.base_url, 'match')
+        response = self.session.post(url, json=entity, params=params)
+        if response.status_code > 299:
+            raise AlephException(response)
+        for result in response.json().get('results', []):
+            yield result
 
     def ingest_upload(self, collection_id, file_path=None, metadata=None):
         """
