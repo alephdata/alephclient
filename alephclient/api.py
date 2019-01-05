@@ -25,7 +25,7 @@ class AlephAPI(object):
             params["q"] = query
         if filters:
             for key, val in filters:
-                params["filter:"+key] = val
+                params["filter:" + key] = val
         return self.base_url + path + '?' + urlencode(params)
 
     def _request(self, method, url, **kwargs):
@@ -47,10 +47,29 @@ class AlephAPI(object):
         return self._request("GET", url)
 
     def get_collection_by_foreign_id(self, foreign_id):
+        if foreign_id is None:
+            return
         filters = [('foreign_id', foreign_id)]
         for coll in self.filter_collections(filters=filters, limit=1):
             if coll.get('foreign_id') == foreign_id:
                 return coll
+
+    def load_collection_by_foreign_id(self, foreign_id, config=None):
+        collection_id = self.get_collection_by_foreign_id(foreign_id)
+        if collection_id is not None:
+            return collection_id
+
+        config = config or {}
+        data = {
+            'foreign_id': foreign_id,
+            'label': config.get('label', foreign_id),
+            'casefile': config.get('casefile', False),
+            'category': config.get('category', 'other'),
+            'languages': config.get('languages', []),
+            'summary': config.get('summary', ''),
+        }
+        collection = self.create_collection(data)
+        return collection.get('id')
 
     def filter_collections(self, query=None, filters=None, **kwargs):
         """Filter collections for the given query and/or filters.
@@ -102,7 +121,8 @@ class AlephAPI(object):
         url = self._make_url("collections/{0}/mapping".format(collection_id))
         return self._request("PUT", url, json=mapping)
 
-    def stream_entities(self, collection_id=None, include=None):
+    def stream_entities(self, collection_id=None, include=None,
+                        decode_json=True):
         """Iterate over all entities in the given collection.
 
         params
@@ -110,23 +130,25 @@ class AlephAPI(object):
         collection_id: id of the collection to stream
         include: an array of fields from the index to include.
         """
+        url = self._make_url('entities/_stream')
         url = urljoin(self.base_url, 'entities/_stream')
         if collection_id is not None:
-            url = 'collections/%s/_stream' % collection_id
-            url = urljoin(self.base_url, url)
+            url = "collections/{0}/_stream".format(collection_id)
+            url = self._make_url(url)
         params = {'include': include}
         res = self.session.get(url, params=params, stream=True)
         for line in res.iter_lines():
-            yield json.loads(line)
+            if decode_json:
+                line = json.loads(line)
+            yield line
 
     def _bulk_chunk(self, collection_id, chunk):
-        url = 'collections/%s/_bulk' % collection_id
-        url = urljoin(self.base_url, url)
+        url = self._make_url("collections/{0}/_bulk".format(collection_id))
         response = self.session.post(url, json=chunk)
         if response.status_code > 299:
             raise AlephException(response)
 
-    def bulk_write(self, collection_id, entities, chunk_size=1000):
+    def write_entities(self, collection_id, entities, chunk_size=1000):
         """Create entities in bulk via the API, in the given
         collection.
 

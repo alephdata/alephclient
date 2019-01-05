@@ -1,11 +1,12 @@
-import logging
+import json
 import click
+import logging
 
 from alephclient.api import AlephAPI
+from alephclient.errors import AlephException
 from alephclient.tasks.crawldir import crawl_dir
 from alephclient.tasks.bulkload import bulk_load
-from alephclient.tasks.bulkwrite import bulk_write
-from alephclient.errors import AlephException
+from alephclient.util import read_json_stream
 
 log = logging.getLogger(__name__)
 
@@ -62,16 +63,36 @@ def bulkload(ctx, mapping_file):
         log.error("Error: %s", exc.message)
 
 
-@cli.command()
-@click.option('--foreign-id',
-              required=True,
-              help="foreign_id of the collection")
+@cli.command('write-entities')
+@click.option('-f', '--foreign-id', required=True, help="foreign_id of the collection")  # noqa
 @click.pass_context
-def bulkwrite(ctx, foreign_id):
+def write_entities(ctx, foreign_id):
     """Read entities from standard input and index them."""
     stdin = click.get_text_stream('stdin')
+    api = ctx.obj["api"]
     try:
-        bulk_write(ctx.obj["api"], stdin, foreign_id)
+        collection_id = api.load_collection_by_foreign_id(foreign_id, {})
+        entities = read_json_stream(stdin)
+        api.write_entities(collection_id, entities)
+    except AlephException as exc:
+        log.error("Error: %s", exc.message)
+
+
+@cli.command('stream-entities')
+@click.option('-f', '--foreign-id', help="foreign_id of the collection")
+@click.pass_context
+def stream_entities(ctx, foreign_id):
+    """Load entities from the server and print them to stdout."""
+    stdout = click.get_binary_stream('stdout')
+    api = ctx.obj["api"]
+    try:
+        include = ['id', 'schema', 'properties']
+        collection_id = api.get_collection_by_foreign_id(foreign_id)
+        for entity in api.stream_entities(collection_id=collection_id,
+                                          include=include,
+                                          decode_json=False):
+            stdout.write(entity)
+            stdout.write(b'\n')
     except AlephException as exc:
         log.error("Error: %s", exc.message)
 

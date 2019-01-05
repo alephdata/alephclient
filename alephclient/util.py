@@ -1,28 +1,25 @@
 import os
+import json
 import yaml
-
+import logging
 from banal import is_listish, is_mapping, ensure_list
 
+log = logging.getLogger(__name__)
 
-def load_collection(api, foreign_id, config):
-    collections = api.filter_collections(filters=[('foreign_id', foreign_id)])
-    for collection in collections:
-        languages = config.get('languages', [])
-        if len(languages):
-            collection['languages'] = languages
-            api.update_collection(collection.get('id'), collection)
-        return collection.get('id')
 
-    data = {
-        'foreign_id': foreign_id,
-        'label': config.get('label', foreign_id),
-        'casefile': config.get('casefile', False),
-        'category': config.get('category', 'other'),
-        'languages': config.get('languages', []),
-        'summary': config.get('summary', ''),
-    }
-    collection = api.create_collection(data)
-    return collection.get('id')
+def read_json_stream(stream):
+    count = 0
+    try:
+        while True:
+            line = stream.readline()
+            if not line:
+                return
+            count += 1
+            if count % 1000 == 0:
+                log.info("Bulk load entities: %s...", count)
+            yield json.loads(line)
+    except Exception:
+        pass
 
 
 def load_config_file(file_path):
