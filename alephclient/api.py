@@ -20,13 +20,16 @@ class AlephAPI(object):
 
     def _make_url(self, path, query=None, filters=None, **kwargs):
         """Construct the target url from given args"""
+        url = self.base_url + path
         params = kwargs
         if query:
             params["q"] = query
         if filters:
             for key, val in filters:
                 params["filter:" + key] = val
-        return self.base_url + path + '?' + urlencode(params)
+        if len(params):
+            url = url + '?' + urlencode(params)
+        return url
 
     def _request(self, method, url, **kwargs):
         """A single point to make the http requests.
@@ -136,10 +139,14 @@ class AlephAPI(object):
             url = self._make_url(url)
         params = {'include': include}
         res = self.session.get(url, params=params, stream=True)
-        for line in res.iter_lines():
-            if decode_json:
-                line = json.loads(line)
-            yield line
+        for entity in res.iter_lines():
+            entity = json.loads(entity)
+            properties = entity.get('properties')
+            if properties is not None and 'id' in entity:
+                values = properties.get('alephUrl', [])
+                values.append(self._make_url('entities/%s' % entity.get('id')))
+                properties['alephUrl'] = values
+            yield entity
 
     def _bulk_chunk(self, collection_id, chunk):
         url = self._make_url("collections/{0}/_bulk".format(collection_id))

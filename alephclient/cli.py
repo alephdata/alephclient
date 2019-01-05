@@ -1,3 +1,4 @@
+import json
 import click
 import logging
 
@@ -81,7 +82,7 @@ def write_entities(ctx, foreign_id):
 @click.pass_context
 def stream_entities(ctx, foreign_id):
     """Load entities from the server and print them to stdout."""
-    stdout = click.get_binary_stream('stdout')
+    stdout = click.get_text_stream('stdout')
     api = ctx.obj["api"]
     try:
         include = ['id', 'schema', 'properties']
@@ -91,8 +92,8 @@ def stream_entities(ctx, foreign_id):
         for entity in api.stream_entities(collection_id=collection.get('id'),
                                           include=include,
                                           decode_json=False):
-            stdout.write(entity)
-            stdout.write(b'\n')
+            stdout.write(json.dumps(entity))
+            stdout.write('\n')
     except AlephException as exc:
         log.error("Error: %s", exc.message)
 
