@@ -131,7 +131,6 @@ class AlephAPI(object):
         include: an array of fields from the index to include.
         """
         url = self._make_url('entities/_stream')
-        url = urljoin(self.base_url, 'entities/_stream')
         if collection_id is not None:
             url = "collections/{0}/_stream".format(collection_id)
             url = self._make_url(url)
@@ -166,10 +165,13 @@ class AlephAPI(object):
         if len(chunk):
             self._bulk_chunk(collection_id, chunk)
 
-    def match(self, entity, collection_ids=None):
+    def match(self, entity, collection_ids=None, url=None):
         """Find similar entities given a sample entity."""
-        params = {'collection_ids': ensure_list(collection_ids)}
-        url = urljoin(self.base_url, 'match')
+        params = {
+            'collection_ids': ensure_list(collection_ids)
+        }
+        if url is None:
+            url = self._make_url('match')
         response = self.session.post(url, json=entity, params=params)
         if response.status_code > 299:
             raise AlephException(response)
