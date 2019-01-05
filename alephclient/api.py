@@ -10,13 +10,13 @@ from alephclient.errors import AlephException
 
 class AlephAPI(object):
 
-    def __init__(self, base_url, api_key, session_id=None):
+    def __init__(self, base_url, api_key=None, session_id=None):
+        session_id = session_id or str(uuid.uuid4())
         self.base_url = urljoin(base_url, '/api/2/')
         self.session = requests.Session()
-        self.session.headers = {
-            'X-Aleph-Session': session_id or str(uuid.uuid4()),
-            'Authorization': 'ApiKey %s' % api_key
-        }
+        self.session.headers['X-Aleph-Session'] = session_id
+        if api_key is not None:
+            self.session.headers['Authorization'] = 'ApiKey %s' % api_key
 
     def _make_url(self, path, query=None, filters=None, **kwargs):
         """Construct the target url from given args"""

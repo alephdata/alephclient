@@ -1,4 +1,3 @@
-import json
 import click
 import logging
 
@@ -13,8 +12,7 @@ log = logging.getLogger(__name__)
 
 @click.group()
 @click.option('--api-base-url', help="Aleph API address", envvar="ALEPH_HOST")
-@click.option("--api-key", envvar="ALEPH_API_KEY",
-              help="Aleph API key for authentication")
+@click.option("--api-key", envvar="ALEPH_API_KEY", help="Aleph API key for authentication")  # noqa
 @click.pass_context
 def cli(ctx, api_base_url, api_key):
     """API client for Aleph API"""
@@ -22,8 +20,8 @@ def cli(ctx, api_base_url, api_key):
     logging.getLogger('requests').setLevel(logging.WARNING)
     logging.getLogger('urllib3').setLevel(logging.WARNING)
     logging.getLogger('httpstream').setLevel(logging.WARNING)
-    if not api_key:
-        raise click.BadParameter("Missing API key", param_hint="api-key")
+    if not api_base_url:
+        raise click.BadParameter("Missing Aleph base URL")
     if ctx.obj is None:
         ctx.obj = {}
     ctx.obj["api"] = AlephAPI(api_base_url, api_key)
@@ -87,8 +85,10 @@ def stream_entities(ctx, foreign_id):
     api = ctx.obj["api"]
     try:
         include = ['id', 'schema', 'properties']
-        collection_id = api.get_collection_by_foreign_id(foreign_id)
-        for entity in api.stream_entities(collection_id=collection_id,
+        collection = api.get_collection_by_foreign_id(foreign_id)
+        if collection is None:
+            raise click.BadParameter("Collection %r not found!" % foreign_id)
+        for entity in api.stream_entities(collection_id=collection.get('id'),
                                           include=include,
                                           decode_json=False):
             stdout.write(entity)
