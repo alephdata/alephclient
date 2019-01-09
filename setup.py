@@ -23,6 +23,7 @@ setup(
         'requests >= 2.20.0',
         'requests_toolbelt >= 0.8.0',
         'click >= 6.7',
+        'protobuf >= 3.6.1',
         'grpcio >= 1.17.1'
     ],
     extras_require={
