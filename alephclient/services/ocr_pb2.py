@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -20,6 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='alephclient/services/ocr.proto',
   package='',
   syntax='proto3',
+  serialized_options=None,
   serialized_pb=_b('\n\x1e\x61lephclient/services/ocr.proto\x1a!alephclient/services/common.proto\"y\n\x05Image\x12\x0c\n\x04\x64\x61ta\x18\x01 \x01(\x0c\x12\x11\n\tlanguages\x18\x02 \x03(\t\x12\x19\n\x04mode\x18\x03 \x01(\x0e\x32\x0b.Image.Mode\"4\n\x04Mode\x12\t\n\x05OTHER\x10\x00\x12\x08\n\x04PAGE\x10\x01\x12\x08\n\x04WORD\x10\x02\x12\r\n\tCHARACTER\x10\x03\x32+\n\rRecognizeText\x12\x1a\n\tRecognize\x12\x06.Image\x1a\x05.Textb\x06proto3')
   ,
   dependencies=[alephclient_dot_services_dot_common__pb2.DESCRIPTOR,])
@@ -34,23 +34,23 @@ _IMAGE_MODE = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='OTHER', index=0, number=0,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PAGE', index=1, number=1,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='WORD', index=2, number=2,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='CHARACTER', index=3, number=3,
-      options=None,
+      serialized_options=None,
       type=None),
   ],
   containing_type=None,
-  options=None,
+  serialized_options=None,
   serialized_start=138,
   serialized_end=190,
 )
@@ -70,21 +70,21 @@ _IMAGE = _descriptor.Descriptor(
       has_default_value=False, default_value=_b(""),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='languages', full_name='Image.languages', index=1,
       number=2, type=9, cpp_type=9, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='mode', full_name='Image.mode', index=2,
       number=3, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -92,7 +92,7 @@ _IMAGE = _descriptor.Descriptor(
   enum_types=[
     _IMAGE_MODE,
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -121,7 +121,7 @@ _RECOGNIZETEXT = _descriptor.ServiceDescriptor(
   full_name='RecognizeText',
   file=DESCRIPTOR,
   index=0,
-  options=None,
+  serialized_options=None,
   serialized_start=192,
   serialized_end=235,
   methods=[
@@ -132,7 +132,7 @@ _RECOGNIZETEXT = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_IMAGE,
     output_type=alephclient_dot_services_dot_common__pb2._TEXT,
-    options=None,
+    serialized_options=None,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_RECOGNIZETEXT)

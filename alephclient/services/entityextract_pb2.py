@@ -7,7 +7,6 @@ from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import descriptor_pb2
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
@@ -20,6 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='alephclient/services/entityextract.proto',
   package='',
   syntax='proto3',
+  serialized_options=None,
   serialized_pb=_b('\n(alephclient/services/entityextract.proto\x1a!alephclient/services/common.proto\"\xf7\x01\n\x0f\x45xtractedEntity\x12\x0c\n\x04text\x18\x01 \x01(\t\x12#\n\x04type\x18\x02 \x01(\x0e\x32\x15.ExtractedEntity.Type\x12\r\n\x05start\x18\x03 \x01(\x04\x12\x0b\n\x03\x65nd\x18\x04 \x01(\x04\"\x94\x01\n\x04Type\x12\t\n\x05OTHER\x10\x00\x12\n\n\x06PERSON\x10\x01\x12\x10\n\x0cORGANIZATION\x10\x02\x12\x0b\n\x07\x43OMPANY\x10\x03\x12\x0c\n\x08LOCATION\x10\x04\x12\x0b\n\x07\x43OUNTRY\x10\x05\x12\x0c\n\x08LANGUAGE\x10\x06\x12\r\n\tIPADDRESS\x10\x07\x12\t\n\x05PHONE\x10\x08\x12\t\n\x05\x45MAIL\x10\t\x12\x08\n\x04IBAN\x10\n25\n\rEntityExtract\x12$\n\x07\x45xtract\x12\x05.Text\x1a\x10.ExtractedEntity0\x01\x62\x06proto3')
   ,
   dependencies=[alephclient_dot_services_dot_common__pb2.DESCRIPTOR,])
@@ -34,51 +34,51 @@ _EXTRACTEDENTITY_TYPE = _descriptor.EnumDescriptor(
   values=[
     _descriptor.EnumValueDescriptor(
       name='OTHER', index=0, number=0,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PERSON', index=1, number=1,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='ORGANIZATION', index=2, number=2,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='COMPANY', index=3, number=3,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='LOCATION', index=4, number=4,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='COUNTRY', index=5, number=5,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='LANGUAGE', index=6, number=6,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='IPADDRESS', index=7, number=7,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='PHONE', index=8, number=8,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='EMAIL', index=9, number=9,
-      options=None,
+      serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
       name='IBAN', index=10, number=10,
-      options=None,
+      serialized_options=None,
       type=None),
   ],
   containing_type=None,
-  options=None,
+  serialized_options=None,
   serialized_start=179,
   serialized_end=327,
 )
@@ -98,28 +98,28 @@ _EXTRACTEDENTITY = _descriptor.Descriptor(
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='type', full_name='ExtractedEntity.type', index=1,
       number=2, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='start', full_name='ExtractedEntity.start', index=2,
       number=3, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='end', full_name='ExtractedEntity.end', index=3,
       number=4, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
-      options=None, file=DESCRIPTOR),
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -127,7 +127,7 @@ _EXTRACTEDENTITY = _descriptor.Descriptor(
   enum_types=[
     _EXTRACTEDENTITY_TYPE,
   ],
-  options=None,
+  serialized_options=None,
   is_extendable=False,
   syntax='proto3',
   extension_ranges=[],
@@ -156,7 +156,7 @@ _ENTITYEXTRACT = _descriptor.ServiceDescriptor(
   full_name='EntityExtract',
   file=DESCRIPTOR,
   index=0,
-  options=None,
+  serialized_options=None,
   serialized_start=329,
   serialized_end=382,
   methods=[
@@ -167,7 +167,7 @@ _ENTITYEXTRACT = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=alephclient_dot_services_dot_common__pb2._TEXT,
     output_type=_EXTRACTEDENTITY,
-    options=None,
+    serialized_options=None,
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_ENTITYEXTRACT)
