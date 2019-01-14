@@ -70,7 +70,8 @@ def write_entities(ctx, foreign_id):
     stdin = click.get_text_stream('stdin')
     api = ctx.obj["api"]
     try:
-        collection_id = api.load_collection_by_foreign_id(foreign_id, {})
+        collection = api.load_collection_by_foreign_id(foreign_id, {})
+        collection_id = collection.get('id')
         entities = read_json_stream(stdin)
         api.write_entities(collection_id, entities)
     except AlephException as exc:

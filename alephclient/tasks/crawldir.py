@@ -75,7 +75,8 @@ def crawl_dir(api, path, foreign_id, config):
     language: language hint for the documents
     """
     path = Path(path).resolve()
-    collection_id = api.load_collection_by_foreign_id(foreign_id, config)
+    collection = api.load_collection_by_foreign_id(foreign_id, config)
+    collection_id = collection.get('id')
     languages = config.get('languages', [])
     q = queue.Queue()
     q.put((path, 1))

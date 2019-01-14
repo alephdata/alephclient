@@ -58,9 +58,9 @@ class AlephAPI(object):
                 return coll
 
     def load_collection_by_foreign_id(self, foreign_id, config=None):
-        collection_id = self.get_collection_by_foreign_id(foreign_id)
-        if collection_id is not None:
-            return collection_id
+        collection = self.get_collection_by_foreign_id(foreign_id)
+        if collection is not None:
+            return collection
 
         config = config or {}
         data = {
@@ -72,7 +72,7 @@ class AlephAPI(object):
             'summary': config.get('summary', ''),
         }
         collection = self.create_collection(data)
-        return collection.get('id')
+        return collection
 
     def filter_collections(self, query=None, filters=None, **kwargs):
         """Filter collections for the given query and/or filters.
