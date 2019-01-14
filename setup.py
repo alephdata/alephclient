@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='alephclient',
-    version='0.10.1',
+    version='0.10.2',
     description='Command-line client for Aleph API',
     author='Organized Crime and Corruption Reporting Project',
     author_email='data@occrp.org',
