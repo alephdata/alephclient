@@ -39,7 +39,7 @@ class AlephAPI(object):
         conviniently in a single place.
         """
         response = self.session.request(method=method, url=url, **kwargs)
-        if response.status_code > 299:
+        if int(response.status_code) > 299:
             raise AlephException(response)
         response.raise_for_status()
         if len(response.text):
@@ -151,7 +151,7 @@ class AlephAPI(object):
     def _bulk_chunk(self, collection_id, chunk):
         url = self._make_url("collections/{0}/_bulk".format(collection_id))
         response = self.session.post(url, json=chunk)
-        if response.status_code > 299:
+        if int(response.status_code) > 299:
             raise AlephException(response)
 
     def write_entities(self, collection_id, entities, chunk_size=1000):
@@ -180,7 +180,7 @@ class AlephAPI(object):
         if url is None:
             url = self._make_url('match')
         response = self.session.post(url, json=entity, params=params)
-        if response.status_code > 299:
+        if int(response.status_code) > 299:
             raise AlephException(response)
         for result in response.json().get('results', []):
             yield result
