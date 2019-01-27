@@ -7,7 +7,6 @@ class AlephException(Exception):
         self.response = response
         try:
             data = response.json()
-            self.status = data.get('status')
             self.message = data.get('message')
         except Exception:
             self.message = response.text
