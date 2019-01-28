@@ -64,8 +64,10 @@ def bulkload(ctx, mapping_file):
 
 @cli.command('write-entities')
 @click.option('-f', '--foreign-id', required=True, help="foreign_id of the collection")  # noqa
+@click.option('-m', '--merge', is_flag=True, default=False, help="update entities in place")  # noqa
+@click.option('-r', '--retries', type=int, default=5, help="retries upon server failure")  # noqa
 @click.pass_context
-def write_entities(ctx, foreign_id):
+def write_entities(ctx, foreign_id, merge, retries):
     """Read entities from standard input and index them."""
     stdin = click.get_text_stream('stdin')
     api = ctx.obj["api"]
@@ -73,7 +75,8 @@ def write_entities(ctx, foreign_id):
         collection = api.load_collection_by_foreign_id(foreign_id, {})
         collection_id = collection.get('id')
         entities = read_json_stream(stdin)
-        api.write_entities(collection_id, entities)
+        api.write_entities(collection_id, entities,
+                           merge=merge, retries=retries)
     except AlephException as exc:
         log.error("Error: %s", exc.message)
 

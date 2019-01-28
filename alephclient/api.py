@@ -1,11 +1,16 @@
 import uuid
 import json
+import time
+import logging
 import requests
+from itertools import count
 from banal import ensure_list
 from urllib.parse import urlencode, urljoin
 from requests_toolbelt import MultipartEncoder
 
 from alephclient.errors import AlephException
+
+log = logging.getLogger(__name__)
 
 
 class AlephAPI(object):
@@ -148,13 +153,21 @@ class AlephAPI(object):
                 properties['alephUrl'] = values
             yield entity
 
-    def _bulk_chunk(self, collection_id, chunk):
-        url = self._make_url("collections/{0}/_bulk".format(collection_id))
-        response = self.session.post(url, json=chunk)
-        if int(response.status_code) > 299:
-            raise AlephException(response)
+    def _bulk_chunk(self, collection_id, chunk, merge=False, retries=5):
+        for attempt in count(1):
+            url = self._make_url("collections/{0}/_bulk".format(collection_id))
+            params = {'merge': merge}
+            response = self.session.post(url, json=chunk, params=params)
+            if attempt <= retries and int(response.status_code) > 499:
+                log.warning("Bulk failure: %s, retry in %ss",
+                            response.status_code, attempt)
+                time.sleep(attempt)
+                continue
+            if int(response.status_code) > 299:
+                raise AlephException(response)
+            return
 
-    def write_entities(self, collection_id, entities, chunk_size=1000):
+    def write_entities(self, collection_id, entities, chunk_size=1000, **kw):
         """Create entities in bulk via the API, in the given
         collection.
 
@@ -167,10 +180,10 @@ class AlephAPI(object):
         for entity in entities:
             chunk.append(entity)
             if len(chunk) >= chunk_size:
-                self._bulk_chunk(collection_id, chunk)
+                self._bulk_chunk(collection_id, chunk, **kw)
                 chunk = []
         if len(chunk):
-            self._bulk_chunk(collection_id, chunk)
+            self._bulk_chunk(collection_id, chunk, **kw)
 
     def match(self, entity, collection_ids=None, url=None):
         """Find similar entities given a sample entity."""
