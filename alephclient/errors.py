@@ -1,15 +1,21 @@
+from requests import ConnectionError, Timeout
 
 
 class AlephException(Exception):
 
-    def __init__(self, response):
-        self.status = response.status_code
-        self.response = response
-        try:
-            data = response.json()
-            self.message = data.get('message')
-        except Exception:
-            self.message = response.text
+    def __init__(self, exc):
+        self.exc = exc
+        self.response = exc.respone
+        self.transient = isinstance(exc, (ConnectionError, Timeout))
+        self.message = str(exc)
+        if exc.response is not None:
+            self.status = exc.response.status_code
+            self.transient = exc.response.status_code >= 500
+            try:
+                data = exc.response.json()
+                self.message = data.get('message')
+            except Exception:
+                self.message = exc.response.text
 
     def __str__(self):
         return self.message

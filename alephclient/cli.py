@@ -14,8 +14,9 @@ log = logging.getLogger(__name__)
 @click.group()
 @click.option('--api-base-url', help="Aleph API address", envvar="ALEPH_HOST")
 @click.option("--api-key", envvar="ALEPH_API_KEY", help="Aleph API key for authentication")  # noqa
+@click.option('-r', '--retries', type=int, default=5, help="retries upon server failure")  # noqa
 @click.pass_context
-def cli(ctx, api_base_url, api_key):
+def cli(ctx, api_base_url, api_key, retries):
     """API client for Aleph API"""
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger('requests').setLevel(logging.WARNING)
@@ -25,7 +26,7 @@ def cli(ctx, api_base_url, api_key):
         raise click.BadParameter("Missing Aleph base URL")
     if ctx.obj is None:
         ctx.obj = {}
-    ctx.obj["api"] = AlephAPI(api_base_url, api_key)
+    ctx.obj["api"] = AlephAPI(api_base_url, api_key, retries=retries)
 
 
 @cli.command()
@@ -59,15 +60,14 @@ def bulkload(ctx, mapping_file):
     try:
         bulk_load(ctx.obj["api"], mapping_file)
     except AlephException as exc:
-        log.error("Error: %s", exc.message)
+        log.error("Error: %s", exc)
 
 
 @cli.command('write-entities')
 @click.option('-f', '--foreign-id', required=True, help="foreign_id of the collection")  # noqa
 @click.option('-m', '--merge', is_flag=True, default=False, help="update entities in place")  # noqa
-@click.option('-r', '--retries', type=int, default=5, help="retries upon server failure")  # noqa
 @click.pass_context
-def write_entities(ctx, foreign_id, merge, retries):
+def write_entities(ctx, foreign_id, merge):
     """Read entities from standard input and index them."""
     stdin = click.get_text_stream('stdin')
     api = ctx.obj["api"]
@@ -75,10 +75,9 @@ def write_entities(ctx, foreign_id, merge, retries):
         collection = api.load_collection_by_foreign_id(foreign_id, {})
         collection_id = collection.get('id')
         entities = read_json_stream(stdin)
-        api.write_entities(collection_id, entities,
-                           merge=merge, retries=retries)
+        api.write_entities(collection_id, entities, merge=merge)
     except AlephException as exc:
-        log.error("Error: %s", exc.message)
+        log.error("Error: %s", exc)
 
 
 @cli.command('stream-entities')
@@ -99,7 +98,7 @@ def stream_entities(ctx, foreign_id):
             stdout.write(json.dumps(entity))
             stdout.write('\n')
     except AlephException as exc:
-        log.error("Error: %s", exc.message)
+        log.error("Error: %s", exc)
 
 
 if __name__ == "__main__":

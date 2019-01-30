@@ -1,6 +1,8 @@
 import os
 import json
 import yaml
+import time
+import random
 import logging
 from banal import is_listish, is_mapping, ensure_list
 
@@ -20,6 +22,13 @@ def read_json_stream(stream):
             yield json.loads(line)
     except Exception:
         pass
+
+
+def backoff(err, failures):
+    """Implement a random, growing delay between external service retries."""
+    sleep = max(1, failures) * random.random()
+    log.warning("Error: %s, back-off: %.2fs", err, sleep)
+    time.sleep(sleep)
 
 
 def load_config_file(file_path):

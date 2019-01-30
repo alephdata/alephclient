@@ -1,25 +1,30 @@
 import uuid
 import json
-import time
 import logging
-import requests
+import pkg_resources
 from itertools import count
 from banal import ensure_list
 from urllib.parse import urlencode, urljoin
+from requests import Session, RequestException
 from requests_toolbelt import MultipartEncoder
 
 from alephclient.errors import AlephException
+from alephclient.util import backoff
 
 log = logging.getLogger(__name__)
+MIME = 'application/octet-stream'
+VERSION = pkg_resources.get_distribution('alephclient').version
 
 
 class AlephAPI(object):
 
-    def __init__(self, base_url, api_key=None, session_id=None):
+    def __init__(self, base_url, api_key=None, session_id=None, retries=0):
         session_id = session_id or str(uuid.uuid4())
         self.base_url = urljoin(base_url, '/api/2/')
-        self.session = requests.Session()
+        self.retries = retries
+        self.session = Session()
         self.session.headers['X-Aleph-Session'] = session_id
+        self.session.headers['User-Agent'] = 'alephclient/%s' % VERSION
         if api_key is not None:
             self.session.headers['Authorization'] = 'ApiKey %s' % api_key
 
@@ -43,10 +48,12 @@ class AlephAPI(object):
         successful and failed responses and possibly manage session etc
         conviniently in a single place.
         """
-        response = self.session.request(method=method, url=url, **kwargs)
-        if int(response.status_code) > 299:
-            raise AlephException(response)
-        response.raise_for_status()
+        try:
+            response = self.session.request(method=method, url=url, **kwargs)
+            response.raise_for_status()
+        except RequestException as exc:
+            raise AlephException(exc)
+
         if len(response.text):
             return response.json()
 
@@ -143,29 +150,34 @@ class AlephAPI(object):
             url = "collections/{0}/_stream".format(collection_id)
             url = self._make_url(url)
         params = {'include': include}
-        res = self.session.get(url, params=params, stream=True)
-        for entity in res.iter_lines():
-            entity = json.loads(entity)
-            properties = entity.get('properties')
-            if properties is not None and 'id' in entity:
-                values = properties.get('alephUrl', [])
-                values.append(self._make_url('entities/%s' % entity.get('id')))
-                properties['alephUrl'] = values
-            yield entity
+        try:
+            res = self.session.get(url, params=params, stream=True)
+            res.raise_for_status()
+            for entity in res.iter_lines():
+                entity = json.loads(entity)
+                properties = entity.get('properties')
+                if properties is not None and 'id' in entity:
+                    values = properties.get('alephUrl', [])
+                    aleph_url = 'entities/%s' % entity.get('id')
+                    values.append(self._make_url(aleph_url))
+                    properties['alephUrl'] = values
+                yield entity
+        except RequestException as exc:
+            raise AlephException(exc)
 
-    def _bulk_chunk(self, collection_id, chunk, merge=False, retries=5):
+    def _bulk_chunk(self, collection_id, chunk, merge=False):
         for attempt in count(1):
             url = self._make_url("collections/{0}/_bulk".format(collection_id))
             params = {'merge': merge}
-            response = self.session.post(url, json=chunk, params=params)
-            if attempt <= retries and int(response.status_code) > 499:
-                log.warning("Bulk failure: %s, retry in %ss",
-                            response.status_code, attempt)
-                time.sleep(attempt)
-                continue
-            if int(response.status_code) > 299:
-                raise AlephException(response)
-            return
+            try:
+                response = self.session.post(url, json=chunk, params=params)
+                response.raise_for_status()
+                return response
+            except RequestException as exc:
+                ae = AlephException(exc)
+                if not ae.transient or attempt > self.retries:
+                    raise ae
+                backoff(ae, attempt)
 
     def write_entities(self, collection_id, entities, chunk_size=1000, **kw):
         """Create entities in bulk via the API, in the given
@@ -192,11 +204,13 @@ class AlephAPI(object):
         }
         if url is None:
             url = self._make_url('match')
-        response = self.session.post(url, json=entity, params=params)
-        if int(response.status_code) > 299:
-            raise AlephException(response)
-        for result in response.json().get('results', []):
-            yield result
+        try:
+            response = self.session.post(url, json=entity, params=params)
+            response.raise_for_status()
+            for result in response.json().get('results', []):
+                yield result
+        except RequestException as exc:
+            raise AlephException(exc)
 
     def ingest_upload(self, collection_id, file_path=None, metadata=None):
         """
@@ -216,11 +230,17 @@ class AlephAPI(object):
             data = {"meta": json.dumps(metadata)}
             return self._request("POST", url, data=data)
 
-        with file_path.open('rb') as fh:
-            # use multipart encoder to allow uploading very large files
-            m = MultipartEncoder(fields={
-                'meta': json.dumps(metadata),
-                'file': (file_path.name, fh, 'application/octet-stream')
-            })
-            headers = {'Content-Type': m.content_type}
-            return self._request("POST", url, data=m, headers=headers)
+        for attempt in count(1):
+            try:
+                with file_path.open('rb') as fh:
+                    # use multipart encoder to allow uploading very large files
+                    m = MultipartEncoder(fields={
+                        'meta': json.dumps(metadata),
+                        'file': (file_path.name, fh, MIME)
+                    })
+                    headers = {'Content-Type': m.content_type}
+                    return self._request("POST", url, data=m, headers=headers)
+            except AlephException as ae:
+                if not ae.transient or attempt > self.retries:
+                    raise ae
+                backoff(ae, attempt)
