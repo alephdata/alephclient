@@ -65,9 +65,8 @@ class AlephAPI(object):
         if foreign_id is None:
             return
         filters = [('foreign_id', foreign_id)]
-        for coll in self.filter_collections(filters=filters, limit=1):
-            if coll.get('foreign_id') == foreign_id:
-                return coll
+        for coll in self.filter_collections(filters=filters):
+            return coll
 
     def load_collection_by_foreign_id(self, foreign_id, config=None):
         collection = self.get_collection_by_foreign_id(foreign_id)
