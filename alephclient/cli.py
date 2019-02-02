@@ -43,13 +43,16 @@ def cli(ctx, api_base_url, api_key, retries):
 def crawldir(ctx, path, foreign_id, language=None, casefile=False):
     """Crawl a directory recursively and upload the documents in it to a
     collection."""
-    config = {
-        'label': path,
-        'languages': language,
-        'casefile': casefile
-    }
-    api = ctx.obj["api"]
-    crawl_dir(api, path, foreign_id, config)
+    try:
+        config = {
+            'label': path,
+            'languages': language,
+            'casefile': casefile
+        }
+        api = ctx.obj["api"]
+        crawl_dir(api, path, foreign_id, config)
+    except AlephException as exc:
+        raise click.ClickException(str(exc))
 
 
 @cli.command()
@@ -60,7 +63,7 @@ def bulkload(ctx, mapping_file):
     try:
         bulk_load(ctx.obj["api"], mapping_file)
     except AlephException as exc:
-        log.error("Error: %s", exc)
+        raise click.ClickException(str(exc))
 
 
 @cli.command('write-entities')
@@ -77,7 +80,7 @@ def write_entities(ctx, foreign_id, merge):
         entities = read_json_stream(stdin)
         api.write_entities(collection_id, entities, merge=merge)
     except AlephException as exc:
-        log.error("Error: %s", exc)
+        raise click.ClickException(str(exc))
 
 
 @cli.command('stream-entities')
@@ -98,7 +101,7 @@ def stream_entities(ctx, foreign_id):
             stdout.write(json.dumps(entity))
             stdout.write('\n')
     except AlephException as exc:
-        log.error("Error: %s", exc)
+        raise click.ClickException(str(exc))
 
 
 if __name__ == "__main__":

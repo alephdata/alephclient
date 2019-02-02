@@ -5,10 +5,11 @@ class AlephException(Exception):
 
     def __init__(self, exc):
         self.exc = exc
-        self.response = exc.respone
+        self.response = None
         self.transient = isinstance(exc, (ConnectionError, Timeout))
         self.message = str(exc)
-        if exc.response is not None:
+        if hasattr(exc, 'response') and exc.response is not None:
+            self.response = exc.response
             self.status = exc.response.status_code
             self.transient = exc.response.status_code >= 500
             try:
