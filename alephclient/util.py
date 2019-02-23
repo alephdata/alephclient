@@ -11,17 +11,14 @@ log = logging.getLogger(__name__)
 
 def read_json_stream(stream):
     count = 0
-    try:
-        while True:
-            line = stream.readline()
-            if not line:
-                return
-            count += 1
-            if count % 1000 == 0:
-                log.info("Bulk load entities: %s...", count)
-            yield json.loads(line)
-    except Exception:
-        pass
+    while True:
+        line = stream.readline()
+        if not line:
+            return
+        count += 1
+        if count % 1000 == 0:
+            log.info("Bulk load entities: %s...", count)
+        yield json.loads(line)
 
 
 def backoff(err, failures):
