@@ -80,7 +80,7 @@ def write_entities(ctx, foreign_id, merge):
         entities = read_json_stream(stdin)
         api.write_entities(collection_id, entities, merge=merge)
     except AlephException as exc:
-        raise click.ClickException(str(exc))
+        raise click.ClickException(exc.message)
     except BrokenPipeError:
         raise click.Abort()
 
@@ -102,10 +102,10 @@ def stream_entities(ctx, foreign_id):
                                           decode_json=False):
             stdout.write(json.dumps(entity))
             stdout.write('\n')
+    except AlephException as exc:
+        raise click.ClickException(exc.message)
     except BrokenPipeError:
         raise click.Abort()
-    except AlephException as exc:
-        raise click.ClickException(str(exc))
 
 
 if __name__ == "__main__":
