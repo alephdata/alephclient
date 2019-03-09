@@ -1,12 +1,12 @@
 import os
 import time
-import queue
 import logging
 import threading
 import multiprocessing
-from pathlib import Path
+from six.moves.queue import Queue
 
 from alephclient.errors import AlephException
+from alephclient.util import Path
 
 log = logging.getLogger(__name__)
 
@@ -78,7 +78,7 @@ def crawl_dir(api, path, foreign_id, config):
     collection = api.load_collection_by_foreign_id(foreign_id, config)
     collection_id = collection.get('id')
     languages = config.get('languages', [])
-    q = queue.Queue()
+    q = Queue()
     q.put((path, 1))
     threads = []
     for i in range(THREADS):

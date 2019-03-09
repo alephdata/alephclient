@@ -18,19 +18,18 @@ setup(
     ],
     packages=find_packages(exclude=['alephclient.tests']),
     install_requires=[
+        'six',
         'banal >= 0.4.2',
         'pyyaml',
+        'pathlib2; python_version<"3"',
         'requests >= 2.20.0',
         'requests_toolbelt >= 0.8.0',
-        'click >= 6.7',
-        'protobuf >= 3.6.1',
-        'grpcio >= 1.17.1'
+        'click >= 6.7'
     ],
     extras_require={
         'dev': [
             'pytest',
             'pytest-mock >= 1.10.0',
-            'grpcio-tools >= 1.17.1',
         ]
     },
     entry_points={

@@ -4,7 +4,7 @@ import logging
 import pkg_resources
 from itertools import count
 from banal import ensure_list
-from urllib.parse import urlencode, urljoin
+from six.moves.urllib.parse import urlencode, urljoin
 from requests import Session, RequestException
 from requests_toolbelt import MultipartEncoder
 
