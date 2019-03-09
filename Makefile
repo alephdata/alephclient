@@ -4,10 +4,6 @@ all: clean test dists
 install:
 	pip install -q -e ".[dev]"
 
-generate: install
-	python -m grpc_tools.protoc -Iprotos --python_out=. --grpc_python_out=. \
-		./protos/alephclient/services/*.proto
-
 test: install
 	pytest
 
