@@ -1,6 +1,6 @@
 # alephclient
 
-Command-line client for Aleph 2. It can be used to bulk import document sets via
+Command-line client for Aleph. It can be used to bulk import document sets via
 the API, without direct access to the server. It requires an active API client
 to perform uploads.
 
