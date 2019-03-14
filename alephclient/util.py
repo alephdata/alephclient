@@ -37,7 +37,7 @@ def load_config_file(file_path):
     """Load a YAML (or JSON) bulk load mapping file."""
     file_path = os.path.abspath(file_path)
     with open(file_path, 'r') as fh:
-        data = yaml.load(fh) or {}
+        data = yaml.safe_load(fh) or {}
     return resolve_includes(file_path, data)
 
 
