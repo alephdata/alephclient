@@ -56,8 +56,8 @@ def aleph_emit(context, data):
         file_path = Path(fh.name).resolve()
         res = api.ingest_upload(collection_id, file_path, meta)
         if res.get('status') == 'ok':
-            document = res.get('documents')[0]
-            context.log.info("Document ID: %s", document['id'])
+            document = res.get('id')
+            context.log.info("Document ID: %s", document)
         else:
             context.emit_warning("Error: %r" % res)
 
