@@ -4,6 +4,7 @@ from banal import clean_dict
 
 from alephclient import settings
 from alephclient.api import AlephAPI
+from alephclient.errors import AlephException
 
 
 def aleph_emit(context, data):
@@ -11,10 +12,6 @@ def aleph_emit(context, data):
     if api is None:
         return
     collection_id = get_collection_id(context, api)
-    if collection_id is None:
-        context.log.warning("Cannot get aleph collection.")
-        return
-
     content_hash = data.get('content_hash')
     source_url = data.get('source_url', data.get('url'))
     foreign_id = data.get('foreign_id', data.get('request_id', source_url))
@@ -47,19 +44,17 @@ def aleph_emit(context, data):
 
     meta = clean_dict(meta)
     # pprint(meta)
-
     label = meta.get('file_name', meta.get('source_url'))
     context.log.info("Upload: %s", label)
     with context.load_file(content_hash) as fh:
         if fh is None:
             return
         file_path = Path(fh.name).resolve()
-        res = api.ingest_upload(collection_id, file_path, meta)
-        if res.get('status') == 'ok':
-            document = res.get('id')
-            context.log.info("Document ID: %s", document)
-        else:
-            context.emit_warning("Error: %r" % res)
+        try:
+            res = api.ingest_upload(collection_id, file_path, meta)
+            context.log.info("Aleph ID: %s", res.get('id'))
+        except AlephException as ae:
+            context.emit_warning("Error: %s" % ae)
 
 
 def get_api(context):
