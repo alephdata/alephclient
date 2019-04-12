@@ -2,6 +2,7 @@ import json
 import click
 import logging
 
+from alephclient import settings
 from alephclient.api import AlephAPI
 from alephclient.errors import AlephException
 from alephclient.tasks.crawldir import crawl_dir
@@ -12,26 +13,25 @@ log = logging.getLogger(__name__)
 
 
 @click.group()
-@click.option('--api-base-url', help="Aleph API address", envvar="ALEPH_HOST")
-@click.option("--api-key", envvar="ALEPH_API_KEY", help="Aleph API key for authentication")  # noqa
+@click.option('--host', default=settings.ALEPH_HOST, metavar="URL", help="Aleph API URL")  # noqa
+@click.option('--api-key', default=settings.ALEPH_API_KEY, metavar="KEY", help="Aleph API key for authentication")  # noqa
 @click.option('-r', '--retries', type=int, default=5, help="retries upon server failure")  # noqa
 @click.pass_context
-def cli(ctx, api_base_url, api_key, retries):
+def cli(ctx, host, api_key, retries):
     """API client for Aleph API"""
     logging.basicConfig(level=logging.DEBUG)
     logging.getLogger('requests').setLevel(logging.WARNING)
     logging.getLogger('urllib3').setLevel(logging.WARNING)
     logging.getLogger('httpstream').setLevel(logging.WARNING)
-    if not api_base_url:
-        raise click.BadParameter("Missing Aleph base URL")
+    if not host:
+        raise click.BadParameter('Missing Aleph host URL')
     if ctx.obj is None:
         ctx.obj = {}
-    ctx.obj["api"] = AlephAPI(api_base_url, api_key, retries=retries)
+    ctx.obj['api'] = AlephAPI(host, api_key, retries=retries)
 
 
 @cli.command()
-@click.option('--casefile', is_flag=True, default=False,
-              help="handle as case file")
+@click.option('--casefile', is_flag=True, default=False, help='handle as case file')  # noqa
 @click.option('--language',
               multiple=True,
               help="language hint: 2-letter language code (ISO 639)")
