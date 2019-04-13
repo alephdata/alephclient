@@ -16,7 +16,7 @@ pip install alephclient
 
 `alephclient` needs the url of an Aleph API instance and an API key for the said
 API. These can be provided by setting the environment variables `ALEPH_HOST` and
-`ALEPH_API_KEY` respectively; or by passing them in with `--api-base-url` and
+`ALEPH_API_KEY` respectively; or by passing them in with `--api-host` and
 `--api-key` options.
 
 ### Commands
@@ -35,6 +35,31 @@ Example:
 
 ```bash
 alephclient --api-base-url http://127.0.0.1:5000/api/2/ --api-key 2c0ae66024f0403bb751207e54c5eb5d crawldir --foreign-id wikileaks-cable --category leak /Users/sunu/data/cable
+```
+
+#### `write-entities`
+
+Load JSON-formatted entities formatted in the `followthemoney` structure into
+an aleph collection. This can be used in conjunction with the command-line tools
+for generating such data provided by `followthemoney-util`. Data that is loaded
+this way should be aggregated as much as possible, for example using the
+`ftm aggregate` command-line utility, or the `balkhash` database layer.
+
+A typical use might look this:
+
+```bash
+ftm map my_mapping.yml | ftm aggregate | alephclient write-entities -f my_dataset
+```
+
+#### `stream-entities`
+
+The inverse of `write-entities`, this will stream entities from the given aleph
+instance so that they can be written to a file.
+
+Here's how you'd stream an aleph collection:
+
+```bash
+alephclient stream-entities -f my_dataset >my_dataset.json
 ```
 
 #### `bulkload`

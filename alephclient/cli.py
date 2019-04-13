@@ -67,17 +67,17 @@ def bulkload(ctx, mapping_file):
 
 
 @cli.command('write-entities')
+@click.option('-i', '--infile', type=click.File('r'), default='-')  # noqa
 @click.option('-f', '--foreign-id', required=True, help="foreign_id of the collection")  # noqa
 @click.option('-m', '--merge', is_flag=True, default=False, help="update entities in place")  # noqa
 @click.pass_context
-def write_entities(ctx, foreign_id, merge):
+def write_entities(ctx, infile, foreign_id, merge):
     """Read entities from standard input and index them."""
-    stdin = click.get_text_stream('stdin')
     api = ctx.obj["api"]
     try:
         collection = api.load_collection_by_foreign_id(foreign_id, {})
         collection_id = collection.get('id')
-        entities = read_json_stream(stdin)
+        entities = read_json_stream(infile)
         api.write_entities(collection_id, entities, merge=merge)
     except AlephException as exc:
         raise click.ClickException(exc.message)
@@ -86,11 +86,11 @@ def write_entities(ctx, foreign_id, merge):
 
 
 @cli.command('stream-entities')
+@click.option('-o', '--outfile', type=click.File('w'), default='-')  # noqa
 @click.option('-f', '--foreign-id', help="foreign_id of the collection")
 @click.pass_context
-def stream_entities(ctx, foreign_id):
+def stream_entities(ctx, outfile, foreign_id):
     """Load entities from the server and print them to stdout."""
-    stdout = click.get_text_stream('stdout')
     api = ctx.obj["api"]
     try:
         include = ['id', 'schema', 'properties']
@@ -100,8 +100,8 @@ def stream_entities(ctx, foreign_id):
         for entity in api.stream_entities(collection_id=collection.get('id'),
                                           include=include,
                                           decode_json=False):
-            stdout.write(json.dumps(entity))
-            stdout.write('\n')
+            outfile.write(json.dumps(entity))
+            outfile.write('\n')
     except AlephException as exc:
         raise click.ClickException(exc.message)
     except BrokenPipeError:
