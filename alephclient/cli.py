@@ -7,7 +7,6 @@ from alephclient.api import AlephAPI
 from alephclient.errors import AlephException
 from alephclient.tasks.crawldir import crawl_dir
 from alephclient.tasks.bulkload import bulk_load
-from alephclient.util import read_json_stream
 
 log = logging.getLogger(__name__)
 
@@ -70,15 +69,29 @@ def bulkload(ctx, mapping_file):
 @click.option('-i', '--infile', type=click.File('r'), default='-')  # noqa
 @click.option('-f', '--foreign-id', required=True, help="foreign_id of the collection")  # noqa
 @click.option('-m', '--merge', is_flag=True, default=False, help="update entities in place")  # noqa
+@click.option('--unsafe', is_flag=True, default=False, help="disable server-side validation")  # noqa
 @click.pass_context
-def write_entities(ctx, infile, foreign_id, merge):
+def write_entities(ctx, infile, foreign_id, merge=False, unsafe=False):
     """Read entities from standard input and index them."""
     api = ctx.obj["api"]
     try:
         collection = api.load_collection_by_foreign_id(foreign_id, {})
         collection_id = collection.get('id')
-        entities = read_json_stream(infile)
-        api.write_entities(collection_id, entities, merge=merge)
+
+        def read_json_stream(stream):
+            count = 0
+            while True:
+                line = stream.readline()
+                if not line:
+                    return
+                count += 1
+                if count % 1000 == 0:
+                    log.info("Bulk load entities [%s]: %s...",
+                             foreign_id, count)
+                yield json.loads(line)
+
+        entities = read_json_stream(infile, foreign_id)
+        api.write_entities(collection_id, entities, merge=merge, unsafe=unsafe)
     except AlephException as exc:
         raise click.ClickException(exc.message)
     except BrokenPipeError:
