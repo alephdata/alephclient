@@ -86,12 +86,12 @@ def write_entities(ctx, infile, foreign_id, merge=False, unsafe=False):
                     return
                 count += 1
                 if count % 1000 == 0:
-                    log.info("Bulk load entities [%s]: %s...",
+                    log.info("[%s] Bulk load entities: %s...",
                              foreign_id, count)
                 yield json.loads(line)
 
-        entities = read_json_stream(infile, foreign_id)
-        api.write_entities(collection_id, entities, merge=merge, unsafe=unsafe)
+        api.write_entities(collection_id, read_json_stream(infile),
+                           merge=merge, unsafe=unsafe)
     except AlephException as exc:
         raise click.ClickException(exc.message)
     except BrokenPipeError:
