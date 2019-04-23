@@ -27,69 +27,56 @@ class TestCrawldir(object):
         })
 
     def test_ingest(self, mocker):
-        mocker.patch.object(self.api, "ingest_upload")
+        mocker.patch.object(self.api, "ingest_upload",
+                            return_value={"id": 42})
         mocker.patch.object(self.api, "load_collection_by_foreign_id",
                             return_value={"id": 2})
         mocker.patch.object(self.api, "update_collection")
         crawl_dir(self.api, "alephclient/tests/testdata", "test153", {})
+        base_path = os.path.abspath("alephclient/tests/testdata")
         assert self.api.ingest_upload.call_count == 5
         expected_calls = [
             mocker.call(
                 2,
-                None,
+                Path(os.path.join(base_path, "feb")),
                 metadata={
                     'foreign_id': 'feb',
-                    'file_name': 'feb',
-                    'languages': []
+                    'file_name': 'feb'
                 }
             ),
             mocker.call(
                 2,
-                None,
+                Path(os.path.join(base_path, "jan")),
                 metadata={
                     'foreign_id': 'jan',
-                    'file_name': 'jan',
-                    'languages': []
+                    'file_name': 'jan'
                 }
             ),
             mocker.call(
                 2,
-                Path(os.path.join(os.path.abspath(
-                    "alephclient/tests/testdata"), "feb/2.txt"
-                )),
+                Path(os.path.join(base_path, "feb/2.txt")),
                 metadata={
-                    'parent': {
-                        'foreign_id': 'feb'
-                    },
+                    'parent_id': 42,
                     'foreign_id': 'feb/2.txt',
-                    'file_name': '2.txt',
-                    'languages': []
+                    'file_name': '2.txt'
                 }
             ),
             mocker.call(
                 2,
-                None,
+                Path(os.path.join(base_path, "jan/week1")),
                 metadata={
-                    'parent': {
-                        'foreign_id': 'jan'
-                    },
+                    'parent_id': 42,
                     'foreign_id': 'jan/week1',
-                    'file_name': 'week1',
-                    'languages': []
+                    'file_name': 'week1'
                 }
             ),
             mocker.call(
                 2,
-                Path(os.path.join(os.path.abspath(
-                    "alephclient/tests/testdata"), "jan/week1/1.txt"
-                )),
+                Path(os.path.join(base_path, "jan/week1/1.txt")),
                 metadata={
-                    'parent': {
-                        'foreign_id': 'jan/week1'
-                    },
+                    'parent_id': 42,
                     'foreign_id': 'jan/week1/1.txt',
-                    'file_name': '1.txt',
-                    'languages': []
+                    'file_name': '1.txt'
                 }
             ),
         ]
