@@ -19,40 +19,40 @@ def _get_foreign_id(root_path, path):
         return str(path.relative_to(root_path))
 
 
-def _upload_path(api, collection_id, languages, root_path, path):
-    foreign_id = _get_foreign_id(root_path, path)
-    if foreign_id is None:
-        return
+def _upload_path(api, path, collection_id, parent_id, foreign_id):
     metadata = {
         'foreign_id': foreign_id,
-        'languages': languages,
         'file_name': path.name,
     }
-    log.info('Upload [%s]: %s', collection_id, foreign_id)
-    parent_id = _get_foreign_id(root_path, path.parent)
+    log.info('Upload [%s->%s]: %s', collection_id, parent_id, foreign_id)
     if parent_id is not None:
-        metadata['parent'] = {'foreign_id': parent_id}
-    file_path = None if path.is_dir() else path
-    api.ingest_upload(collection_id, file_path, metadata=metadata)
+        metadata['parent_id'] = parent_id
+    result = api.ingest_upload(collection_id, path, metadata=metadata)
+    return result.get('id')
 
 
-def _crawl_path(q, api, collection_id, languages, root_path, path):
-    _upload_path(api, collection_id, languages, root_path, path)
-    if not path.is_dir():
-        return
-    for child in path.iterdir():
-        q.put((child, 1))
+def _crawl_path(q, api, collection_id, parent_id, root_path, path):
+    foreign_id = _get_foreign_id(root_path, path)
+    # A foreign ID will be generated for all paths but the root directory of
+    # an imported folder. For this, we'll just list the directory but not
+    # create a document to reflect the root.
+    if foreign_id is not None:
+        parent_id = _upload_path(api, path, collection_id,
+                                 parent_id, foreign_id)
+    if path.is_dir():
+        for child in path.iterdir():
+            q.put((child, parent_id, 1))
 
 
-def _upload(q, api, collection_id, languages, root_path):
+def _upload(q, api, collection_id, root_path):
     while not q.empty():
-        path, try_number = q.get()
+        path, parent_id, try_number = q.get()
         try:
-            _crawl_path(q, api, collection_id, languages, root_path, path)
+            _crawl_path(q, api, collection_id, parent_id, root_path, path)
         except AlephException as exc:
             if exc.status > 499 and try_number < settings.MAX_TRIES:
                 time.sleep(settings.TIMEOUT * try_number)
-                q.put((path, try_number + 1))
+                q.put((path, parent_id, try_number + 1))
             else:
                 log.error(exc.message)
         except Exception:
@@ -72,12 +72,11 @@ def crawl_dir(api, path, foreign_id, config):
     path = Path(path).resolve()
     collection = api.load_collection_by_foreign_id(foreign_id, config)
     collection_id = collection.get('id')
-    languages = config.get('languages', [])
     q = Queue()
-    q.put((path, 1))
+    q.put((path, None, 1))
     threads = []
     for i in range(settings.THREADS):
-        args = (q, api, collection_id, languages, path)
+        args = (q, api, collection_id, path)
         t = threading.Thread(target=_upload, args=args)
         t.daemon = True
         t.start()
