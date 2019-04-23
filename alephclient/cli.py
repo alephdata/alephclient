@@ -12,8 +12,8 @@ log = logging.getLogger(__name__)
 
 
 @click.group()
-@click.option('--host', default=settings.ALEPH_HOST, metavar="URL", help="Aleph API URL")  # noqa
-@click.option('--api-key', default=settings.ALEPH_API_KEY, metavar="KEY", help="Aleph API key for authentication")  # noqa
+@click.option('--host', default=settings.HOST, metavar="HOST", help="Aleph API host URL")  # noqa
+@click.option('--api-key', default=settings.API_KEY, metavar="KEY", help="Aleph API key for authentication")  # noqa
 @click.option('-r', '--retries', type=int, default=5, help="retries upon server failure")  # noqa
 @click.pass_context
 def cli(ctx, host, api_key, retries):
@@ -31,12 +31,8 @@ def cli(ctx, host, api_key, retries):
 
 @cli.command()
 @click.option('--casefile', is_flag=True, default=False, help='handle as case file')  # noqa
-@click.option('--language',
-              multiple=True,
-              help="language hint: 2-letter language code (ISO 639)")
-@click.option('--foreign-id',
-              required=True,
-              help="foreign_id of the collection")
+@click.option('-l', '--language', multiple=True, help="language hint: 2-letter language code (ISO 639)")  # noqa
+@click.option('-f', '--foreign-id', required=True, help="foreign_id of the collection")  # noqa
 @click.argument('path', type=click.Path(exists=True))
 @click.pass_context
 def crawldir(ctx, path, foreign_id, language=None, casefile=False):
@@ -59,6 +55,7 @@ def crawldir(ctx, path, foreign_id, language=None, casefile=False):
 @click.pass_context
 def bulkload(ctx, mapping_file):
     """Trigger a load of structured entity data using the submitted mapping."""
+    # TODO: When can we remove this?
     try:
         bulk_load(ctx.obj["api"], mapping_file)
     except AlephException as exc:

@@ -1,18 +1,13 @@
-import os
 import time
 import logging
 import threading
-import multiprocessing
 from six.moves.queue import Queue
 
+from alephclient import settings
 from alephclient.errors import AlephException
 from alephclient.util import Path
 
 log = logging.getLogger(__name__)
-
-THREADS = int(os.getenv("ALEPHCLIENT_THREADS", 5 * multiprocessing.cpu_count()))  # noqa
-TIMEOUT = int(os.getenv("ALEPHCLIENT_TIMEOUT", 5))
-MAX_TRIES = int(os.getenv("ALEPHCLIENT_MAX_TRIES", 3))
 
 
 def _get_foreign_id(root_path, path):
@@ -55,8 +50,8 @@ def _upload(q, api, collection_id, languages, root_path):
         try:
             _crawl_path(q, api, collection_id, languages, root_path, path)
         except AlephException as exc:
-            if exc.status >= 500 and try_number < MAX_TRIES:
-                time.sleep(TIMEOUT * try_number)
+            if exc.status > 499 and try_number < settings.MAX_TRIES:
+                time.sleep(settings.TIMEOUT * try_number)
                 q.put((path, try_number + 1))
             else:
                 log.error(exc.message)
@@ -81,7 +76,7 @@ def crawl_dir(api, path, foreign_id, config):
     q = Queue()
     q.put((path, 1))
     threads = []
-    for i in range(THREADS):
+    for i in range(settings.THREADS):
         args = (q, api, collection_id, languages, path)
         t = threading.Thread(target=_upload, args=args)
         t.daemon = True

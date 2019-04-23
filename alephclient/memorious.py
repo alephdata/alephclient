@@ -58,16 +58,16 @@ def aleph_emit(context, data):
 
 
 def get_api(context):
-    if not settings.ALEPH_HOST:
+    if not settings.HOST:
         context.log.warning("No $MEMORIOUS_ALEPH_HOST, skipping upload...")
         return
-    if not settings.ALEPH_API_KEY:
+    if not settings.API_KEY:
         context.log.warning("No $MEMORIOUS_ALEPH_API_KEY, skipping upload...")
         return
 
     session_id = 'memorious:%s' % context.crawler.name
-    return AlephAPI(settings.ALEPH_HOST,
-                    settings.ALEPH_API_KEY,
+    return AlephAPI(settings.HOST,
+                    settings.API_KEY,
                     session_id=session_id)
 
 
