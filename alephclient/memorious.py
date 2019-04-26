@@ -4,6 +4,7 @@ from banal import clean_dict
 
 from alephclient import settings
 from alephclient.api import AlephAPI
+from alephclient.util import backoff
 from alephclient.errors import AlephException
 
 
@@ -50,11 +51,16 @@ def aleph_emit(context, data):
         if fh is None:
             return
         file_path = Path(fh.name).resolve()
-        try:
-            res = api.ingest_upload(collection_id, file_path, meta)
-            context.log.info("Aleph ID: %s", res.get('id'))
-        except AlephException as ae:
-            context.emit_warning("Error: %s" % ae)
+        for try_number in range(api.retries):
+            try:
+                res = api.ingest_upload(collection_id, file_path, meta)
+                context.log.info("Aleph ID: %s", res.get('id'))
+                return
+            except AlephException as ae:
+                if try_number > api.retries or not ae.transient:
+                    context.emit_warning("Error: %s" % ae)
+                    return
+                backoff(ae, try_number)
 
 
 def get_api(context):

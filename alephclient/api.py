@@ -8,6 +8,7 @@ from six.moves.urllib.parse import urlencode, urljoin
 from requests import Session, RequestException
 from requests_toolbelt import MultipartEncoder
 
+from alephclient import settings
 from alephclient.errors import AlephException
 from alephclient.util import backoff
 
@@ -18,10 +19,14 @@ VERSION = pkg_resources.get_distribution('alephclient').version
 
 class AlephAPI(object):
 
-    def __init__(self, base_url, api_key=None, session_id=None, retries=0):
-        session_id = session_id or str(uuid.uuid4())
-        self.base_url = urljoin(base_url, '/api/2/')
+    def __init__(self,
+                 host=settings.HOST,
+                 api_key=settings.API_KEY,
+                 session_id=None,
+                 retries=settings.MAX_TRIES):
+        self.base_url = urljoin(host, '/api/2/')
         self.retries = retries
+        session_id = session_id or str(uuid.uuid4())
         self.session = Session()
         self.session.headers['X-Aleph-Session'] = session_id
         self.session.headers['User-Agent'] = 'alephclient/%s' % VERSION
@@ -74,15 +79,14 @@ class AlephAPI(object):
             return collection
 
         config = config or {}
-        data = {
+        collection = self.create_collection({
             'foreign_id': foreign_id,
             'label': config.get('label', foreign_id),
             'casefile': config.get('casefile', False),
             'category': config.get('category', 'other'),
             'languages': config.get('languages', []),
             'summary': config.get('summary', ''),
-        }
-        collection = self.create_collection(data)
+        })
         return collection
 
     def filter_collections(self, query=None, filters=None, **kwargs):

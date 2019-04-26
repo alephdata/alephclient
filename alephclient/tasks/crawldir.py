@@ -1,11 +1,10 @@
-import time
 import logging
 import threading
 from six.moves.queue import Queue
 
 from alephclient import settings
 from alephclient.errors import AlephException
-from alephclient.util import Path
+from alephclient.util import Path, backoff
 
 log = logging.getLogger(__name__)
 
@@ -50,8 +49,8 @@ def _upload(q, api, collection_id, root_path):
         try:
             _crawl_path(q, api, collection_id, parent_id, root_path, path)
         except AlephException as exc:
-            if exc.status > 499 and try_number < settings.MAX_TRIES:
-                time.sleep(settings.TIMEOUT * try_number)
+            if exc.transient and try_number < api.retries:
+                backoff(exc, try_number)
                 q.put((path, parent_id, try_number + 1))
             else:
                 log.error(exc.message)

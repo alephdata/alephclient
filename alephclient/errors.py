@@ -6,6 +6,7 @@ class AlephException(Exception):
     def __init__(self, exc):
         self.exc = exc
         self.response = None
+        self.status = None
         self.transient = isinstance(exc, (ConnectionError, Timeout))
         self.message = str(exc)
         if hasattr(exc, 'response') and exc.response is not None:

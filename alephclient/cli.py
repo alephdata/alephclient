@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 @click.group()
 @click.option('--host', default=settings.HOST, metavar="HOST", help="Aleph API host URL")  # noqa
 @click.option('--api-key', default=settings.API_KEY, metavar="KEY", help="Aleph API key for authentication")  # noqa
-@click.option('-r', '--retries', type=int, default=5, help="retries upon server failure")  # noqa
+@click.option('-r', '--retries', type=int, default=settings.MAX_TRIES, help="retries upon server failure")  # noqa
 @click.pass_context
 def cli(ctx, host, api_key, retries):
     """API client for Aleph API"""
