@@ -8,7 +8,7 @@ from alephclient.util import Path
 class TestCrawldir(object):
     def setup_method(self):
         self.api = AlephAPI(
-            base_url="http://aleph.test/api/2/", api_key="fake_key"
+            host="http://aleph.test/api/2/", api_key="fake_key"
         )
 
     def test_new_collection(self, mocker):
