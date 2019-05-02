@@ -66,9 +66,11 @@ def bulkload(ctx, mapping_file):
 @click.option('-i', '--infile', type=click.File('r'), default='-')  # noqa
 @click.option('-f', '--foreign-id', required=True, help="foreign_id of the collection")  # noqa
 @click.option('-m', '--merge', is_flag=True, default=False, help="update entities in place")  # noqa
+@click.option('--force', is_flag=True, default=False, help="continue after server errors")  # noqa
 @click.option('--unsafe', is_flag=True, default=False, help="disable server-side validation")  # noqa
 @click.pass_context
-def write_entities(ctx, infile, foreign_id, merge=False, unsafe=False):
+def write_entities(ctx, infile, foreign_id, merge=False, force=False,
+                   unsafe=False):
     """Read entities from standard input and index them."""
     api = ctx.obj["api"]
     try:
@@ -88,7 +90,7 @@ def write_entities(ctx, infile, foreign_id, merge=False, unsafe=False):
                 yield json.loads(line)
 
         api.write_entities(collection_id, read_json_stream(infile),
-                           merge=merge, unsafe=unsafe)
+                           merge=merge, unsafe=unsafe, force=force)
     except AlephException as exc:
         raise click.ClickException(exc.message)
     except BrokenPipeError:

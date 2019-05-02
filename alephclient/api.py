@@ -168,18 +168,22 @@ class AlephAPI(object):
         except RequestException as exc:
             raise AlephException(exc)
 
-    def _bulk_chunk(self, collection_id, chunk, merge=False, unsafe=False):
+    def _bulk_chunk(self, collection_id, chunk, merge=False, force=False,
+                    unsafe=False):
         for attempt in count(1):
             url = self._make_url("collections/{0}/_bulk".format(collection_id))
             params = {'merge': merge, 'unsafe': unsafe}
             try:
                 response = self.session.post(url, json=chunk, params=params)
                 response.raise_for_status()
-                return response
+                return
             except RequestException as exc:
                 ae = AlephException(exc)
                 if not ae.transient or attempt > self.retries:
-                    raise ae
+                    if not force:
+                        raise ae
+                    log.error(ae)
+                    return
                 backoff(ae, attempt)
 
     def write_entities(self, collection_id, entities, chunk_size=1000, **kw):

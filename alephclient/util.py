@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 def backoff(err, failures):
     """Implement a random, growing delay between external service retries."""
-    sleep = (2 ** max(1, failures)) * random.random()
+    sleep = (2 ** max(1, failures)) + random.random()
     log.warning("Error: %s, back-off: %.2fs", err, sleep)
     time.sleep(sleep)
 
