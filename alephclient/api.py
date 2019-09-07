@@ -33,10 +33,9 @@ class AlephAPI(object):
         if api_key is not None:
             self.session.headers['Authorization'] = 'ApiKey %s' % api_key
 
-    def _make_url(self, path, query=None, filters=None, **kwargs):
+    def _make_url(self, path, query=None, filters=None, **params):
         """Construct the target url from given args"""
         url = self.base_url + path
-        params = kwargs
         if query:
             params["q"] = query
         if filters:
@@ -62,11 +61,23 @@ class AlephAPI(object):
         if len(response.text):
             return response.json()
 
+    def search(self, query, filters=None):
+        """Conduct a search and return the search results."""
+        url = self._make_url("entities", query=query, filters=filters)
+        return self._request("GET", url)
+
     def get_collection(self, collection_id):
+        """Get a single collection by ID (not foreign ID!)."""
         url = self._make_url("collections/{0}".format(collection_id))
         return self._request("GET", url)
 
+    def get_entity(self, entity_id):
+        """Get a single entity by ID."""
+        url = self._make_url("entities/{0}".format(entity_id))
+        return self._request("GET", url)
+
     def get_collection_by_foreign_id(self, foreign_id):
+        """Get a dict representing a collection based on its foreign ID."""
         if foreign_id is None:
             return
         filters = [('foreign_id', foreign_id)]
@@ -74,6 +85,7 @@ class AlephAPI(object):
             return coll
 
     def load_collection_by_foreign_id(self, foreign_id, config=None):
+        """Get a collection by its foreign ID, or create one."""
         collection = self.get_collection_by_foreign_id(foreign_id)
         if collection is not None:
             return collection
