@@ -40,7 +40,6 @@ def crawldir(ctx, path, foreign_id, language=None, casefile=False):
     collection."""
     try:
         config = {
-            'label': path,
             'languages': language,
             'casefile': casefile
         }
