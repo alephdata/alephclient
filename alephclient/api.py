@@ -17,6 +17,43 @@ MIME = 'application/octet-stream'
 VERSION = pkg_resources.get_distribution('alephclient').version
 
 
+class APIResultSet(object):
+
+    def __init__(self, api, url):
+        self.api = api
+        self.url = url
+        self.current = 0
+        self.result = self.api._request('GET', self.url)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.index >= self.result.get('limit'):
+            next_url = self.result.get('next')
+            if next_url is None:
+                raise StopIteration
+            self.result = self.api._request('GET', next_url)
+        try:
+            res = self.result.get('results', [])[self.index]
+        except IndexError:
+            raise StopIteration
+        self.current += 1
+        return res
+
+    next = __next__
+
+    @property
+    def index(self):
+        return self.current - self.result.get('offset')
+
+    def __len__(self):
+        return self.result.get('total')
+
+    def __repr__(self):
+        return '<APIResultSet(%r, %r)>' % (self.url, len(self))
+
+
 class AlephAPI(object):
 
     def __init__(self,
@@ -61,10 +98,17 @@ class AlephAPI(object):
         if len(response.text):
             return response.json()
 
-    def search(self, query, filters=None):
+    def search(self, query, schema=None, schemata=None, filters=None):
         """Conduct a search and return the search results."""
+        filters = ensure_list(filters)
+        if schema is not None:
+            filters.append(('schema', schema))
+        if schemata is not None:
+            filters.append(('schemata', schemata))
+        if schema is None and schemata is None:
+            filters.append(('schemata', 'Thing'))
         url = self._make_url("entities", query=query, filters=filters)
-        return self._request("GET", url)
+        return APIResultSet(self, url)
 
     def get_collection(self, collection_id):
         """Get a single collection by ID (not foreign ID!)."""
@@ -113,9 +157,7 @@ class AlephAPI(object):
         if not query and not filters:
             raise ValueError("One of query or filters is required")
         url = self._make_url("collections", filters=filters, **kwargs)
-        res = self._request("GET", url)
-        if res is not None:
-            return res.get("results", [])
+        return APIResultSet(self, url)
 
     def create_collection(self, data):
         """Create a collection from the given data.
