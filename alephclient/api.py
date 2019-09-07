@@ -180,11 +180,10 @@ class AlephAPI(object):
         except RequestException as exc:
             raise AlephException(exc)
 
-    def _bulk_chunk(self, collection_id, chunk, merge=False, force=False,
-                    unsafe=False):
+    def _bulk_chunk(self, collection_id, chunk, force=False, unsafe=False):
         for attempt in count(1):
             url = self._make_url("collections/{0}/_bulk".format(collection_id))
-            params = {'merge': merge, 'unsafe': unsafe}
+            params = {'unsafe': unsafe}
             try:
                 response = self.session.post(url, json=chunk, params=params)
                 response.raise_for_status()
