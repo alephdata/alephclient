@@ -1,3 +1,4 @@
+import six
 import uuid
 import json
 import logging
@@ -211,6 +212,8 @@ class AlephAPI(object):
             res = self.session.get(url, params=params, stream=True)
             res.raise_for_status()
             for entity in res.iter_lines():
+                if isinstance(entity, six.binary_type):
+                    entity = entity.decode('utf-8')
                 entity = json.loads(entity)
                 properties = entity.get('properties')
                 if properties is not None and 'id' in entity:
