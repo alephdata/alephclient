@@ -17,9 +17,11 @@ jobs:
     - name: Install dependencies
       env:
         DEBIAN_FRONTEND: noninteractive
-      run: pip install tox
+      run: |
+        pip install pytest
+        pip install .
     - name: Run the tests
-      run: tox
+      run: pytest
     - name: Build a distribution
       run: |
         python setup.py sdist bdist_wheel
