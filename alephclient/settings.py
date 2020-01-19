@@ -10,6 +10,6 @@ API_KEY = os.environ.get('MEMORIOUS_ALEPH_API_KEY')
 API_KEY = os.environ.get('ALEPH_API_KEY', API_KEY)
 API_KEY = os.environ.get('ALEPHCLIENT_API_KEY', API_KEY)
 
-THREADS = int(os.environ.get('ALEPHCLIENT_THREADS', multiprocessing.cpu_count()))  # noqa
-TIMEOUT = int(os.environ.get('ALEPHCLIENT_TIMEOUT', 15))
+THREADS = int(os.environ.get('ALEPHCLIENT_THREADS', multiprocessing.cpu_count() * 2))  # noqa
+TIMEOUT = int(os.environ.get('ALEPHCLIENT_TIMEOUT', 60))
 MAX_TRIES = int(os.environ.get('ALEPHCLIENT_MAX_TRIES', 5))

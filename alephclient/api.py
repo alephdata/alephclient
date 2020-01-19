@@ -195,7 +195,7 @@ class AlephAPI(object):
         return self._request("PUT", url, json=mapping)
 
     def stream_entities(self, collection_id=None, include=None,
-                        decode_json=True):
+                        schema=None, decode_json=True):
         """Iterate over all entities in the given collection.
 
         params
@@ -207,7 +207,7 @@ class AlephAPI(object):
         if collection_id is not None:
             url = "collections/{0}/_stream".format(collection_id)
             url = self._make_url(url)
-        params = {'include': include}
+        params = {'include': include, 'schema': schema}
         try:
             res = self.session.get(url, params=params, stream=True)
             res.raise_for_status()

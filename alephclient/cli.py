@@ -96,9 +96,10 @@ def write_entities(ctx, infile, foreign_id, force=False, unsafe=False):
 
 @cli.command('stream-entities')
 @click.option('-o', '--outfile', type=click.File('w'), default='-')  # noqa
+@click.option('-s', '--schema', multiple=True, default=[])  # noqa
 @click.option('-f', '--foreign-id', help="foreign_id of the collection")
 @click.pass_context
-def stream_entities(ctx, outfile, foreign_id):
+def stream_entities(ctx, outfile, schema, foreign_id):
     """Load entities from the server and print them to stdout."""
     api = ctx.obj["api"]
     try:
@@ -107,7 +108,7 @@ def stream_entities(ctx, outfile, foreign_id):
         if collection is None:
             raise click.BadParameter("Collection %r not found!" % foreign_id)
         for entity in api.stream_entities(collection_id=collection.get('id'),
-                                          include=include,
+                                          include=include, schema=schema,
                                           decode_json=False):
             outfile.write(json.dumps(entity))
             outfile.write('\n')
