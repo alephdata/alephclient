@@ -1,9 +1,14 @@
 from setuptools import setup, find_packages
 
+with open('README.md') as f:
+    long_description = f.read()
+
 setup(
     name='alephclient',
     version='1.2.3',
     description='Command-line client for Aleph API',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Organized Crime and Corruption Reporting Project',
     author_email='data@occrp.org',
     url='http://github.com/alephdata/alephclient',
