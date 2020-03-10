@@ -54,7 +54,12 @@ def aleph_emit(context, data):
         for try_number in range(api.retries):
             try:
                 res = api.ingest_upload(collection_id, file_path, meta)
-                context.log.info("Aleph ID: %s", res.get('id'))
+                document_id = res.get('id')
+                context.log.info("Aleph document entity ID: %s", document_id)
+                data['aleph_id'] = document_id
+                data['aleph_document'] = meta
+                data['aleph_collection_id'] = collection_id
+                context.emit(data=data, optional=True)
                 return
             except AlephException as ae:
                 if try_number > api.retries or not ae.transient:
