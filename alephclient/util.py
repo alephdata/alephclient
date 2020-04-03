@@ -5,11 +5,6 @@ import random
 import logging
 from banal import is_listish, is_mapping, ensure_list
 
-try:
-    from pathlib import Path  # noqa
-except ImportError:
-    from pathlib2 import Path  # noqa
-
 log = logging.getLogger(__name__)
 
 

@@ -1,8 +1,8 @@
 import os
+from pathlib import Path
 
 from alephclient.tasks.crawldir import crawl_dir
 from alephclient.api import AlephAPI
-from alephclient.util import Path
 
 
 class TestCrawldir(object):

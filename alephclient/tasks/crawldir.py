@@ -1,10 +1,11 @@
 import logging
 import threading
-from six.moves.queue import Queue
+from queue import Queue
+from pathlib import Path
 
 from alephclient import settings
 from alephclient.errors import AlephException
-from alephclient.util import Path, backoff
+from alephclient.util import backoff
 
 log = logging.getLogger(__name__)
 
