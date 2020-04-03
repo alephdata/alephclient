@@ -108,8 +108,24 @@ def stream_entities(ctx, outfile, schema, foreign_id):
         if collection is None:
             raise click.BadParameter("Collection %r not found!" % foreign_id)
         for entity in api.stream_entities(collection_id=collection.get('id'),
-                                          include=include, schema=schema,
-                                          decode_json=False):
+                                          include=include, schema=schema):
+            outfile.write(json.dumps(entity))
+            outfile.write('\n')
+    except AlephException as exc:
+        raise click.ClickException(exc.message)
+    except BrokenPipeError:
+        raise click.Abort()
+
+
+@cli.command('linkages')
+@click.option('-o', '--outfile', type=click.File('w'), default='-')  # noqa
+@click.option('-c', '--context', multiple=True, default=[])  # noqa
+@click.pass_context
+def linkages(ctx, outfile, context):
+    """Stream all linkages within the given role contexts."""
+    api = ctx.obj["api"]
+    try:
+        for entity in api.linkages(context_ids=context):
             outfile.write(json.dumps(entity))
             outfile.write('\n')
     except AlephException as exc:

@@ -108,18 +108,18 @@ class AlephAPI(object):
             filters.append(('schemata', schemata))
         if schema is None and schemata is None:
             filters.append(('schemata', 'Thing'))
-        url = self._make_url("entities", query=query, filters=filters)
+        url = self._make_url('entities', query=query, filters=filters)
         return APIResultSet(self, url)
 
     def get_collection(self, collection_id):
         """Get a single collection by ID (not foreign ID!)."""
-        url = self._make_url("collections/{0}".format(collection_id))
-        return self._request("GET", url)
+        url = self._make_url('collections/{0}'.format(collection_id))
+        return self._request('GET', url)
 
     def get_entity(self, entity_id):
         """Get a single entity by ID."""
-        url = self._make_url("entities/{0}".format(entity_id))
-        return self._request("GET", url)
+        url = self._make_url('entities/{0}'.format(entity_id))
+        return self._request('GET', url)
 
     def get_collection_by_foreign_id(self, foreign_id):
         """Get a dict representing a collection based on its foreign ID."""
@@ -194,8 +194,7 @@ class AlephAPI(object):
         url = self._make_url("collections/{0}/mapping".format(collection_id))
         return self._request("PUT", url, json=mapping)
 
-    def stream_entities(self, collection_id=None, include=None,
-                        schema=None, decode_json=True):
+    def stream_entities(self, collection_id=None, include=None, schema=None):
         """Iterate over all entities in the given collection.
 
         params
@@ -274,6 +273,12 @@ class AlephAPI(object):
                 yield result
         except RequestException as exc:
             raise AlephException(exc)
+
+    def linkages(self, context_ids=None):
+        """Stream all linkages within the given role contexts."""
+        filters = [('context_id', c) for c in ensure_list(context_ids)]
+        url = self._make_url('linkages', filters=filters)
+        return APIResultSet(self, url)
 
     def ingest_upload(self, collection_id, file_path=None, metadata=None):
         """
