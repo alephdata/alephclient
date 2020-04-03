@@ -11,7 +11,7 @@ from requests_toolbelt import MultipartEncoder
 
 from alephclient import settings
 from alephclient.errors import AlephException
-from alephclient.util import backoff
+from alephclient.util import backoff, prop_push
 
 log = logging.getLogger(__name__)
 MIME = 'application/octet-stream'
@@ -214,12 +214,8 @@ class AlephAPI(object):
                 if isinstance(entity, six.binary_type):
                     entity = entity.decode('utf-8')
                 entity = json.loads(entity)
-                properties = entity.get('properties')
-                if properties is not None and 'id' in entity:
-                    values = properties.get('alephUrl', [])
-                    aleph_url = 'entities/%s' % entity.get('id')
-                    values.append(self._make_url(aleph_url))
-                    properties['alephUrl'] = values
+                aleph_url = 'entities/%s' % entity.get('id')
+                prop_push(entity, 'alephUrl', self._make_url(aleph_url))
                 yield entity
         except RequestException as exc:
             raise AlephException(exc)

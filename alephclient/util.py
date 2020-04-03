@@ -44,3 +44,10 @@ def resolve_includes(file_path, data):
         for key, value in data.items():
             data[key] = resolve_includes(file_path, value)
     return data
+
+
+def prop_push(entity, prop, value):
+    properties = entity.get('properties', {})
+    values = ensure_list(properties.get(prop))
+    values.extend(ensure_list(value))
+    properties[prop] = values
