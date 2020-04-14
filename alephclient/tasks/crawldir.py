@@ -2,24 +2,30 @@ import logging
 import threading
 from queue import Queue
 from pathlib import Path
+from typing import Optional, Dict
 
 from alephclient import settings
+from alephclient.api import AlephAPI
 from alephclient.errors import AlephException
 from alephclient.util import backoff
 
 log = logging.getLogger(__name__)
 
 
-def _get_foreign_id(root_path, path):
+def _get_foreign_id(root_path: Path, path: Path) -> Optional[str]:
     if path == root_path:
         if path.is_dir():
-            return
+            # NOTE: Raise exception
+            return None
         return path.name
     if root_path in path.parents:
         return str(path.relative_to(root_path))
+    # NOTE: Raise exception
+    return None
 
 
-def _upload_path(api, path, collection_id, parent_id, foreign_id):
+def _upload_path(api: AlephAPI, path: Path, collection_id: str, parent_id: str,
+                 foreign_id: str) -> str:
     metadata = {
         'foreign_id': foreign_id,
         'file_name': path.name,
@@ -28,10 +34,13 @@ def _upload_path(api, path, collection_id, parent_id, foreign_id):
     if parent_id is not None:
         metadata['parent_id'] = parent_id
     result = api.ingest_upload(collection_id, path, metadata=metadata)
-    return result.get('id')
+    if 'id' not in result:
+        raise AlephException('Upload failed')
+    return result['id']
 
 
-def _crawl_path(q, api, collection_id, parent_id, root_path, path):
+def _crawl_path(q: Queue, api: AlephAPI, collection_id: str, parent_id: str,
+                root_path: Path, path: Path):
     foreign_id = _get_foreign_id(root_path, path)
     # A foreign ID will be generated for all paths but the root directory of
     # an imported folder. For this, we'll just list the directory but not
@@ -44,7 +53,7 @@ def _crawl_path(q, api, collection_id, parent_id, root_path, path):
             q.put((child, parent_id, 1))
 
 
-def _upload(q, api, collection_id, root_path):
+def _upload(q: Queue, api: AlephAPI, collection_id: str, root_path: Path):
     while not q.empty():
         path, parent_id, try_number = q.get()
         try:
@@ -60,7 +69,7 @@ def _upload(q, api, collection_id, root_path):
         q.task_done()
 
 
-def crawl_dir(api, path, foreign_id, config):
+def crawl_dir(api: AlephAPI, path: str, foreign_id: str, config: Dict):
     """Crawl a directory and upload its content to a collection
 
     params
@@ -69,14 +78,14 @@ def crawl_dir(api, path, foreign_id, config):
     foreign_id: foreign_id of the collection to use.
     language: language hint for the documents
     """
-    path = Path(path).resolve()
+    p = Path(path).resolve()
     collection = api.load_collection_by_foreign_id(foreign_id, config)
     collection_id = collection.get('id')
-    q = Queue()
-    q.put((path, None, 1))
+    q: Queue = Queue()
+    q.put((p, None, 1))
     threads = []
     for i in range(settings.THREADS):
-        args = (q, api, collection_id, path)
+        args = (q, api, collection_id, p)
         t = threading.Thread(target=_upload, args=args)
         t.daemon = True
         t.start()

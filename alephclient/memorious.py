@@ -1,6 +1,7 @@
 from pathlib import Path
 from pprint import pprint  # noqa
-from banal import clean_dict
+from banal import clean_dict  # type: ignore
+from typing import Optional
 
 from alephclient import settings
 from alephclient.api import AlephAPI
@@ -68,13 +69,13 @@ def aleph_emit(context, data):
                 backoff(ae, try_number)
 
 
-def get_api(context):
+def get_api(context) -> Optional[AlephAPI]:
     if not settings.HOST:
         context.log.warning("No $ALEPHCLIENT_HOST, skipping upload...")
-        return
+        return None
     if not settings.API_KEY:
         context.log.warning("No $ALEPHCLIENT_API_KEY, skipping upload...")
-        return
+        return None
 
     session_id = 'memorious:%s' % context.crawler.name
     return AlephAPI(settings.HOST,

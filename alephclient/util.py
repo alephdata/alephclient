@@ -3,19 +3,20 @@ import yaml
 import time
 import random
 import logging
-from banal import is_listish, is_mapping, ensure_list
+from typing import Dict, Union, List
+from banal import is_listish, is_mapping, ensure_list  # type: ignore
 
 log = logging.getLogger(__name__)
 
 
-def backoff(err, failures):
+def backoff(err, failures: int):
     """Implement a random, growing delay between external service retries."""
     sleep = (2 ** max(1, failures)) + random.random()
     log.warning("Error: %s, back-off: %.2fs", err, sleep)
     time.sleep(sleep)
 
 
-def load_config_file(file_path):
+def load_config_file(file_path: str) -> Union[List, Dict]:
     """Load a YAML (or JSON) bulk load mapping file."""
     file_path = os.path.abspath(file_path)
     with open(file_path, 'r') as fh:
@@ -23,7 +24,7 @@ def load_config_file(file_path):
     return resolve_includes(file_path, data)
 
 
-def resolve_includes(file_path, data):
+def resolve_includes(file_path, data) -> Union[List, Dict]:
     """Handle include statements in the graph configuration file.
 
     This allows the YAML graph configuration to be broken into
