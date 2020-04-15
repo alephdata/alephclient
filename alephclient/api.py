@@ -69,8 +69,7 @@ class AlephAPI(object):
         if len(response.text):
             return response.json()
         else:
-            # NOTE: Raise exception?
-            return {}
+            raise AlephException('Empty response.')
 
     def search(self, query: str, schema: Optional[str]=None,
                schemata: Optional[str]=None, filters: Optional[List]=None):

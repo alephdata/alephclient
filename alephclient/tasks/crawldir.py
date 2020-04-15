@@ -15,12 +15,10 @@ log = logging.getLogger(__name__)
 def _get_foreign_id(root_path: Path, path: Path) -> Optional[str]:
     if path == root_path:
         if path.is_dir():
-            # NOTE: Raise exception
             return None
         return path.name
     if root_path in path.parents:
         return str(path.relative_to(root_path))
-    # NOTE: Raise exception
     return None
 
 
@@ -78,20 +76,20 @@ def crawl_dir(api: AlephAPI, path: str, foreign_id: str, config: Dict):
     foreign_id: foreign_id of the collection to use.
     language: language hint for the documents
     """
-    p = Path(path).resolve()
+    _path = Path(path).resolve()
     collection = api.load_collection_by_foreign_id(foreign_id, config)
     collection_id = collection.get('id')
-    q: Queue = Queue()
-    q.put((p, None, 1))
+    _queue: Queue = Queue()
+    _queue.put((_path, None, 1))
     threads = []
     for i in range(settings.THREADS):
-        args = (q, api, collection_id, p)
-        t = threading.Thread(target=_upload, args=args)
-        t.daemon = True
-        t.start()
-        threads.append(t)
+        args = (_queue, api, collection_id, _path)
+        thread = threading.Thread(target=_upload, args=args)
+        thread.daemon = True
+        thread.start()
+        threads.append(thread)
 
     # block until all tasks are done
-    q.join()
-    for t in threads:
-        t.join()
+    _queue.join()
+    for thread in threads:
+        thread.join()
