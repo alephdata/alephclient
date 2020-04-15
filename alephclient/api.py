@@ -19,6 +19,43 @@ MIME = 'application/octet-stream'
 VERSION = pkg_resources.get_distribution('alephclient').version
 
 
+class APIResultSet(object):
+
+    def __init__(self, api: 'AlephAPI', url: str):
+        self.api = api
+        self.url = url
+        self.current = 0
+        self.result = self.api._request('GET', self.url)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.index >= self.result.get('limit'):
+            next_url = self.result.get('next')
+            if next_url is None:
+                raise StopIteration
+            self.result = self.api._request('GET', next_url)
+        try:
+            res = self.result.get('results', [])[self.index]
+        except IndexError:
+            raise StopIteration
+        self.current += 1
+        return res
+
+    next = __next__
+
+    @property
+    def index(self):
+        return self.current - self.result.get('offset')
+
+    def __len__(self):
+        return self.result.get('total')
+
+    def __repr__(self):
+        return '<APIResultSet(%r, %r)>' % (self.url, len(self))
+
+
 class AlephAPI(object):
 
     def __init__(self,
@@ -72,7 +109,8 @@ class AlephAPI(object):
             raise AlephException('Empty response.')
 
     def search(self, query: str, schema: Optional[str]=None,
-               schemata: Optional[str]=None, filters: Optional[List]=None):
+               schemata: Optional[str]=None,
+               filters: Optional[List]=None) -> 'APIResultSet':
         """Conduct a search and return the search results."""
         filters_list: List = ensure_list(filters)
         if schema is not None:
@@ -122,7 +160,8 @@ class AlephAPI(object):
         return collection
 
     def filter_collections(self, query: str=None,
-                           filters: Optional[List]=None, **kwargs):
+                           filters: Optional[List]=None,
+                           **kwargs) -> 'APIResultSet':
         """Filter collections for the given query and/or filters.
 
         params
@@ -252,7 +291,7 @@ class AlephAPI(object):
         except RequestException as exc:
             raise AlephException(exc)
 
-    def linkages(self, context_ids: Optional[List]=None):
+    def linkages(self, context_ids: Optional[List]=None) -> 'APIResultSet':
         """Stream all linkages within the given role contexts."""
         filters = [('context_id', c) for c in ensure_list(context_ids)]
         url = self._make_url('linkages', filters=filters)
@@ -292,40 +331,3 @@ class AlephAPI(object):
                     raise ae
                 backoff(ae, attempt)
         return {}
-
-
-class APIResultSet(object):
-
-    def __init__(self, api: AlephAPI, url: str):
-        self.api = api
-        self.url = url
-        self.current = 0
-        self.result = self.api._request('GET', self.url)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self.index >= self.result.get('limit'):
-            next_url = self.result.get('next')
-            if next_url is None:
-                raise StopIteration
-            self.result = self.api._request('GET', next_url)
-        try:
-            res = self.result.get('results', [])[self.index]
-        except IndexError:
-            raise StopIteration
-        self.current += 1
-        return res
-
-    next = __next__
-
-    @property
-    def index(self):
-        return self.current - self.result.get('offset')
-
-    def __len__(self):
-        return self.result.get('total')
-
-    def __repr__(self):
-        return '<APIResultSet(%r, %r)>' % (self.url, len(self))
