@@ -66,8 +66,6 @@ class AlephAPI(object):
 
         if not host:
             raise AlephException('No host environment variable found')
-        if not api_key:
-            raise AlephException('No API key environment variable found')
         self.base_url = urljoin(host, '/api/2/')
         self.retries = retries
         session_id = session_id or str(uuid.uuid4())
@@ -105,8 +103,7 @@ class AlephAPI(object):
 
         if len(response.text):
             return response.json()
-        else:
-            raise AlephException('Empty response.')
+        return {}
 
     def search(self, query: str, schema: Optional[str]=None,
                schemata: Optional[str]=None,
