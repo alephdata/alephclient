@@ -3,10 +3,12 @@ import json
 import logging
 import pkg_resources
 from itertools import count
-from banal import ensure_list
+from banal import ensure_list  # type: ignore
 from six.moves.urllib.parse import urlencode, urljoin
 from requests import Session, RequestException
-from requests_toolbelt import MultipartEncoder
+from requests_toolbelt import MultipartEncoder  # type: ignore
+from pathlib import Path
+from typing import Optional, Dict, List, Generator, Iterable
 
 from alephclient import settings
 from alephclient.errors import AlephException
@@ -19,7 +21,7 @@ VERSION = pkg_resources.get_distribution('alephclient').version
 
 class APIResultSet(object):
 
-    def __init__(self, api, url):
+    def __init__(self, api: 'AlephAPI', url: str):
         self.api = api
         self.url = url
         self.current = 0
@@ -57,20 +59,24 @@ class APIResultSet(object):
 class AlephAPI(object):
 
     def __init__(self,
-                 host=settings.HOST,
-                 api_key=settings.API_KEY,
-                 session_id=None,
-                 retries=settings.MAX_TRIES):
+                 host: Optional[str]=settings.HOST,
+                 api_key: Optional[str]=settings.API_KEY,
+                 session_id: Optional[str]=None,
+                 retries: int=settings.MAX_TRIES):
+
+        if not host:
+            raise AlephException('No host environment variable found')
         self.base_url = urljoin(host, '/api/2/')
         self.retries = retries
         session_id = session_id or str(uuid.uuid4())
-        self.session = Session()
+        self.session: Session = Session()
         self.session.headers['X-Aleph-Session'] = session_id
         self.session.headers['User-Agent'] = 'alephclient/%s' % VERSION
         if api_key is not None:
             self.session.headers['Authorization'] = 'ApiKey %s' % api_key
 
-    def _make_url(self, path, query=None, filters=None, **params):
+    def _make_url(self, path: str, query: Optional[str]=None,
+                  filters: Optional[List]=None, **params):
         """Construct the target url from given args"""
         url = self.base_url + path
         if query:
@@ -82,7 +88,7 @@ class AlephAPI(object):
             url = url + '?' + urlencode(params)
         return url
 
-    def _request(self, method, url, **kwargs):
+    def _request(self, method: str, url: str, **kwargs) -> Dict:
         """A single point to make the http requests.
 
         Having a single point to make all requests let's us set headers, manage
@@ -97,38 +103,43 @@ class AlephAPI(object):
 
         if len(response.text):
             return response.json()
+        return {}
 
-    def search(self, query, schema=None, schemata=None, filters=None):
+    def search(self, query: str, schema: Optional[str]=None,
+               schemata: Optional[str]=None,
+               filters: Optional[List]=None) -> 'APIResultSet':
         """Conduct a search and return the search results."""
-        filters = ensure_list(filters)
+        filters_list: List = ensure_list(filters)
         if schema is not None:
-            filters.append(('schema', schema))
+            filters_list.append(('schema', schema))
         if schemata is not None:
-            filters.append(('schemata', schemata))
+            filters_list.append(('schemata', schemata))
         if schema is None and schemata is None:
-            filters.append(('schemata', 'Thing'))
-        url = self._make_url('entities', query=query, filters=filters)
+            filters_list.append(('schemata', 'Thing'))
+        url = self._make_url('entities', query=query, filters=filters_list)
         return APIResultSet(self, url)
 
-    def get_collection(self, collection_id):
+    def get_collection(self, collection_id: str) -> Dict:
         """Get a single collection by ID (not foreign ID!)."""
-        url = self._make_url('collections/{0}'.format(collection_id))
+        url = self._make_url(f'collections/{collection_id}')
         return self._request('GET', url)
 
-    def get_entity(self, entity_id):
+    def get_entity(self, entity_id: str) -> Dict:
         """Get a single entity by ID."""
-        url = self._make_url('entities/{0}'.format(entity_id))
+        url = self._make_url(f'entities/{entity_id}')
         return self._request('GET', url)
 
-    def get_collection_by_foreign_id(self, foreign_id):
+    def get_collection_by_foreign_id(self, foreign_id: str) -> Optional[Dict]:
         """Get a dict representing a collection based on its foreign ID."""
         if foreign_id is None:
-            return
+            return None
         filters = [('foreign_id', foreign_id)]
         for coll in self.filter_collections(filters=filters):
             return coll
+        return None
 
-    def load_collection_by_foreign_id(self, foreign_id, config=None):
+    def load_collection_by_foreign_id(self, foreign_id: str,
+                                      config: Optional[Dict]=None) -> Dict:
         """Get a collection by its foreign ID, or create one."""
         collection = self.get_collection_by_foreign_id(foreign_id)
         if collection is not None:
@@ -145,7 +156,9 @@ class AlephAPI(object):
         })
         return collection
 
-    def filter_collections(self, query=None, filters=None, **kwargs):
+    def filter_collections(self, query: str=None,
+                           filters: Optional[List]=None,
+                           **kwargs) -> 'APIResultSet':
         """Filter collections for the given query and/or filters.
 
         params
@@ -156,10 +169,11 @@ class AlephAPI(object):
         """
         if not query and not filters:
             raise ValueError("One of query or filters is required")
-        url = self._make_url("collections", filters=filters, **kwargs)
+        url = self._make_url("collections", query=query,
+                             filters=filters, **kwargs)
         return APIResultSet(self, url)
 
-    def create_collection(self, data):
+    def create_collection(self, data: Dict) -> Dict:
         """Create a collection from the given data.
 
         params
@@ -170,7 +184,7 @@ class AlephAPI(object):
         url = self._make_url("collections")
         return self._request("POST", url, json=data)
 
-    def update_collection(self, collection_id, data):
+    def update_collection(self, collection_id: str, data: Dict) -> Dict:
         """Update an existing collection using the given data.
 
         params
@@ -179,10 +193,10 @@ class AlephAPI(object):
         data: dict with foreign_id, label, category etc. See `CollectionSchema`
         for more details.
         """
-        url = self._make_url("collections/{0}".format(collection_id))
+        url = self._make_url(f"collections/{collection_id}")
         return self._request("PUT", url, json=data)
 
-    def map_collection(self, collection_id, mapping):
+    def map_collection(self, collection_id: str, mapping: Dict):
         """Run a bulk entity data mapping on a collection.
 
         params
@@ -190,10 +204,12 @@ class AlephAPI(object):
         collection_id: id of the collection to update
         mapping: dict with the entity bulk load mapping.
         """
-        url = self._make_url("collections/{0}/mapping".format(collection_id))
+        url = self._make_url(f"collections/{collection_id}/mapping")
         return self._request("PUT", url, json=mapping)
 
-    def stream_entities(self, collection_id=None, include=None, schema=None):
+    def stream_entities(self, collection_id: str=None,
+                        include: Optional[List]=None,
+                        schema: Optional[str]=None) -> Generator[Dict, None, None]:
         """Iterate over all entities in the given collection.
 
         params
@@ -203,7 +219,7 @@ class AlephAPI(object):
         """
         url = self._make_url('entities/_stream')
         if collection_id is not None:
-            url = "collections/{0}/_stream".format(collection_id)
+            url = f"collections/{collection_id}/_stream"
             url = self._make_url(url)
         params = {'include': include, 'schema': schema}
         try:
@@ -219,9 +235,10 @@ class AlephAPI(object):
         except RequestException as exc:
             raise AlephException(exc)
 
-    def _bulk_chunk(self, collection_id, chunk, force=False, unsafe=False):
+    def _bulk_chunk(self, collection_id: str, chunk: List, force: bool=False,
+                    unsafe: bool=False):
         for attempt in count(1):
-            url = self._make_url("collections/{0}/_bulk".format(collection_id))
+            url = self._make_url(f"collections/{collection_id}/_bulk")
             params = {'unsafe': unsafe}
             try:
                 response = self.session.post(url, json=chunk, params=params)
@@ -236,7 +253,8 @@ class AlephAPI(object):
                     return
                 backoff(ae, attempt)
 
-    def write_entities(self, collection_id, entities, chunk_size=1000, **kw):
+    def write_entities(self, collection_id: str, entities: Iterable,
+                       chunk_size: int=1000, **kw):
         """Create entities in bulk via the API, in the given
         collection.
 
@@ -254,7 +272,8 @@ class AlephAPI(object):
         if len(chunk):
             self._bulk_chunk(collection_id, chunk, **kw)
 
-    def match(self, entity, collection_ids=None, url=None):
+    def match(self, entity: Dict, collection_ids: Optional[str]=None,
+              url: str=None) -> Generator[List, None, None]:
         """Find similar entities given a sample entity."""
         params = {
             'collection_ids': ensure_list(collection_ids)
@@ -269,13 +288,14 @@ class AlephAPI(object):
         except RequestException as exc:
             raise AlephException(exc)
 
-    def linkages(self, context_ids=None):
+    def linkages(self, context_ids: Optional[List]=None) -> 'APIResultSet':
         """Stream all linkages within the given role contexts."""
         filters = [('context_id', c) for c in ensure_list(context_ids)]
         url = self._make_url('linkages', filters=filters)
         return APIResultSet(self, url)
 
-    def ingest_upload(self, collection_id, file_path=None, metadata=None):
+    def ingest_upload(self, collection_id: str, file_path: Optional[Path]=None,
+                      metadata: Optional[Dict]=None) -> Dict:
         """
         Create an empty folder in a collection or upload a document to it
 
@@ -307,3 +327,4 @@ class AlephAPI(object):
                 if not ae.transient or attempt > self.retries:
                     raise ae
                 backoff(ae, attempt)
+        return {}
