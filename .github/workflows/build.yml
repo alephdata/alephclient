@@ -23,7 +23,6 @@ jobs:
       run: pytest
     - name: Validate typing
       run: |
-        pip install mypy
         mypy .
     - name: Build a distribution
       run: |

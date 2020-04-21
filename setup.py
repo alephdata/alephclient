@@ -30,6 +30,7 @@ setup(
     ],
     extras_require={
         'dev': [
+            'mypy',
             'wheel',
             'pytest',
             'pytest-mock >= 1.10.0',
