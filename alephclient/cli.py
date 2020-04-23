@@ -4,7 +4,6 @@ import logging
 
 from alephclient import settings
 from alephclient.api import AlephAPI
-from alephclient.util import prop_push
 from alephclient.errors import AlephException
 from alephclient.tasks.crawldir import crawl_dir
 from alephclient.tasks.bulkload import bulk_load
@@ -109,14 +108,10 @@ def stream_entities(ctx, outfile, schema, foreign_id, publisher):
         collection = api.get_collection_by_foreign_id(foreign_id)
         if collection is None:
             raise click.BadParameter("Collection %r not found!" % foreign_id)
-        publisher_label = collection.get('publisher', collection.get('label'))
-        publisher_url = collection.get('links', {}).get('ui')
-        publisher_url = collection.get('publisher_url', publisher_url)
-        for entity in api.stream_entities(collection_id=collection.get('id'),
-                                          include=include, schema=schema):
-            if publisher:
-                prop_push(entity, 'publisher', publisher_label)
-                prop_push(entity, 'publisherUrl', publisher_url)
+        for entity in api.stream_entities(collection=collection,
+                                          include=include,
+                                          schema=schema,
+                                          publisher=publisher):
             outfile.write(json.dumps(entity))
             outfile.write('\n')
     except AlephException as exc:

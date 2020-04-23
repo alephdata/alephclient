@@ -22,7 +22,7 @@ setup(
     ],
     packages=find_packages(exclude=['alephclient.tests']),
     install_requires=[
-        'banal >= 0.4.2',
+        'banal >= 1.0.1',
         'pyyaml',
         'requests >= 2.21.0',
         'requests_toolbelt >= 0.9.1',

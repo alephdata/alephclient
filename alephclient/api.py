@@ -3,7 +3,7 @@ import json
 import logging
 import pkg_resources
 from itertools import count
-from banal import ensure_list  # type: ignore
+from banal import ensure_list, ensure_dict
 from six.moves.urllib.parse import urlencode, urljoin
 from requests import Session, RequestException
 from requests_toolbelt import MultipartEncoder  # type: ignore
@@ -37,13 +37,16 @@ class APIResultSet(object):
                 raise StopIteration
             self.result = self.api._request('GET', next_url)
         try:
-            res = self.result.get('results', [])[self.index]
+            item = self.result.get('results', [])[self.index]
         except IndexError:
             raise StopIteration
         self.current += 1
-        return res
+        return self._patch(item)
 
     next = __next__
+
+    def _patch(self, item):
+        return item
 
     @property
     def index(self):
@@ -54,6 +57,28 @@ class APIResultSet(object):
 
     def __repr__(self):
         return '<APIResultSet(%r, %r)>' % (self.url, len(self))
+
+
+class EntityResultSet(APIResultSet):
+
+    def __init__(self, api: 'AlephAPI', url: str, publisher: bool):
+        super(EntityResultSet, self).__init__(api, url)
+        self.publisher = publisher
+
+    def _patch(self, item):
+        return self.api._patch_entity(item, self.publisher)
+
+
+class LinkageResultSet(APIResultSet):
+
+    def __init__(self, api: 'AlephAPI', url: str, publisher: bool):
+        super(LinkageResultSet, self).__init__(api, url)
+        self.publisher = publisher
+
+    def _patch(self, item):
+        entity = ensure_dict(item.get('entity'))
+        item['entity'] = self.api._patch_entity(entity, self.publisher)
+        return item
 
 
 class AlephAPI(object):
@@ -88,6 +113,32 @@ class AlephAPI(object):
             url = url + '?' + urlencode(params)
         return url
 
+    def _patch_entity(self, entity: Dict,
+                      publisher: bool,
+                      collection: Optional[Dict] = None):
+        """Add extra properties from context to the given entity."""
+        properties: Dict = entity.get('properties', {})
+        collection_: Dict = collection or entity.get('collection') or {}
+        links: Dict = entity.get('links', {})
+        api_url = links.get('self')
+        if api_url is None:
+            api_url = 'entities/%s' % entity.get('id')
+            api_url = self._make_url(api_url)
+        prop_push(properties, 'alephUrl', api_url)
+
+        if publisher:
+            # Context: setting the original publisher or collection
+            # label can help make the data more traceable when merging
+            # data from multiple sources.
+            publisher_label = collection_.get('label')
+            publisher_label = collection_.get('publisher', publisher_label)
+            prop_push(properties, 'publisher', publisher_label)
+
+            publisher_url = collection_.get('links', {}).get('ui')
+            publisher_url = collection_.get('publisher_url', publisher_url)
+            prop_push(properties, 'publisherUrl', publisher_url)
+        return entity
+
     def _request(self, method: str, url: str, **kwargs) -> Dict:
         """A single point to make the http requests.
 
@@ -107,7 +158,8 @@ class AlephAPI(object):
 
     def search(self, query: str, schema: Optional[str] = None,
                schemata: Optional[str] = None,
-               filters: Optional[List] = None) -> 'APIResultSet':
+               filters: Optional[List] = None,
+               publisher: bool = False) -> 'EntityResultSet':
         """Conduct a search and return the search results."""
         filters_list: List = ensure_list(filters)
         if schema is not None:
@@ -117,17 +169,18 @@ class AlephAPI(object):
         if schema is None and schemata is None:
             filters_list.append(('schemata', 'Thing'))
         url = self._make_url('entities', query=query, filters=filters_list)
-        return APIResultSet(self, url)
+        return EntityResultSet(self, url, publisher)
 
     def get_collection(self, collection_id: str) -> Dict:
         """Get a single collection by ID (not foreign ID!)."""
         url = self._make_url(f'collections/{collection_id}')
         return self._request('GET', url)
 
-    def get_entity(self, entity_id: str) -> Dict:
+    def get_entity(self, entity_id: str, publisher: bool = False) -> Dict:
         """Get a single entity by ID."""
         url = self._make_url(f'entities/{entity_id}')
-        return self._request('GET', url)
+        entity = self._request('GET', url)
+        return self._patch_entity(entity, publisher)
 
     def get_collection_by_foreign_id(self, foreign_id: str) -> Optional[Dict]:
         """Get a dict representing a collection based on its foreign ID."""
@@ -145,16 +198,15 @@ class AlephAPI(object):
         if collection is not None:
             return collection
 
-        config = config or {}
-        collection = self.create_collection({
+        config_: Dict = ensure_dict(config)
+        return self.create_collection({
             'foreign_id': foreign_id,
-            'label': config.get('label', foreign_id),
-            'casefile': config.get('casefile', False),
-            'category': config.get('category', 'other'),
-            'languages': config.get('languages', []),
-            'summary': config.get('summary', ''),
+            'label': config_.get('label', foreign_id),
+            'casefile': config_.get('casefile', False),
+            'category': config_.get('category', 'other'),
+            'languages': config_.get('languages', []),
+            'summary': config_.get('summary', ''),
         })
-        return collection
 
     def filter_collections(self, query: str = None,
                            filters: Optional[List] = None,
@@ -207,9 +259,10 @@ class AlephAPI(object):
         url = self._make_url(f"collections/{collection_id}/mapping")
         return self._request("PUT", url, json=mapping)
 
-    def stream_entities(self, collection_id: str = None,
+    def stream_entities(self, collection: Optional[Dict] = None,
                         include: Optional[List] = None,
-                        schema: Optional[str] = None) -> Iterator[Dict]:
+                        schema: Optional[str] = None,
+                        publisher: bool = False) -> Iterator[Dict]:
         """Iterate over all entities in the given collection.
 
         params
@@ -218,7 +271,8 @@ class AlephAPI(object):
         include: an array of fields from the index to include.
         """
         url = self._make_url('entities/_stream')
-        if collection_id is not None:
+        if collection is not None:
+            collection_id = collection.get('id')
             url = f"collections/{collection_id}/_stream"
             url = self._make_url(url)
         params = {'include': include, 'schema': schema}
@@ -226,12 +280,10 @@ class AlephAPI(object):
             res = self.session.get(url, params=params, stream=True)
             res.raise_for_status()
             for entity in res.iter_lines():
-                if isinstance(entity, bytes):
-                    entity = entity.decode('utf-8')
                 entity = json.loads(entity)
-                aleph_url = 'entities/%s' % entity.get('id')
-                prop_push(entity, 'alephUrl', self._make_url(aleph_url))
-                yield entity
+                yield self._patch_entity(entity,
+                                         publisher=publisher,
+                                         collection=collection)
         except RequestException as exc:
             raise AlephException(exc)
 
@@ -273,26 +325,25 @@ class AlephAPI(object):
             self._bulk_chunk(collection_id, chunk, **kw)
 
     def match(self, entity: Dict, collection_ids: Optional[str] = None,
-              url: str = None) -> Iterator[List]:
+              url: str = None, publisher: bool = False) -> Iterator[List]:
         """Find similar entities given a sample entity."""
-        params = {
-            'collection_ids': ensure_list(collection_ids)
-        }
+        params = {'collection_ids': ensure_list(collection_ids)}
         if url is None:
             url = self._make_url('match')
         try:
             response = self.session.post(url, json=entity, params=params)
             response.raise_for_status()
             for result in response.json().get('results', []):
-                yield result
+                yield self._patch_entity(result, publisher=publisher)
         except RequestException as exc:
             raise AlephException(exc)
 
-    def linkages(self, context_ids: Optional[List] = None) -> 'APIResultSet':
+    def linkages(self, context_ids: Optional[List] = None,
+                 publisher: bool = False) -> 'APIResultSet':
         """Stream all linkages within the given role contexts."""
         filters = [('context_id', c) for c in ensure_list(context_ids)]
         url = self._make_url('linkages', filters=filters)
-        return APIResultSet(self, url)
+        return LinkageResultSet(self, url, publisher=publisher)
 
     def ingest_upload(self, collection_id: str,
                       file_path: Optional[Path] = None,

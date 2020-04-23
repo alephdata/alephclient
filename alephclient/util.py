@@ -4,7 +4,7 @@ import time
 import random
 import logging
 from typing import Dict, Union, List
-from banal import is_listish, is_mapping, ensure_list  # type: ignore
+from banal import is_listish, is_mapping, ensure_list
 
 log = logging.getLogger(__name__)
 
@@ -42,8 +42,7 @@ def resolve_includes(file_path, data) -> Union[List, Dict]:
     return data
 
 
-def prop_push(entity, prop, value):
-    properties = entity.get('properties', {})
+def prop_push(properties: Dict, prop: str, value):
     values = ensure_list(properties.get(prop))
     values.extend(ensure_list(value))
     properties[prop] = values
