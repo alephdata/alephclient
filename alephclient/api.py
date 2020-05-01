@@ -137,6 +137,8 @@ class AlephAPI(object):
             publisher_url = collection_.get('links', {}).get('ui')
             publisher_url = collection_.get('publisher_url', publisher_url)
             prop_push(properties, 'publisherUrl', publisher_url)
+
+        entity['properties'] = properties
         return entity
 
     def _request(self, method: str, url: str, **kwargs) -> Dict:
@@ -317,6 +319,8 @@ class AlephAPI(object):
         """
         chunk = []
         for entity in entities:
+            if hasattr(entity, 'to_dict'):
+                entity = entity.to_dict()
             chunk.append(entity)
             if len(chunk) >= chunk_size:
                 self._bulk_chunk(collection_id, chunk, **kw)
