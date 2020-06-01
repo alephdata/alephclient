@@ -214,14 +214,14 @@ class AlephAPI(object):
         return None
 
     def load_collection_by_foreign_id(
-            self, foreign_id: str, config: Optional[Dict] = None, clear: bool = False
+        self, foreign_id: str, config: Optional[Dict] = None, clear: bool = False
     ) -> Dict:
         """Get a collection by its foreign ID, or create one. Setting clear will clear any found collection"""
         collection = self.get_collection_by_foreign_id(foreign_id)
         if collection is not None:
             if not clear:
                 return collection
-            self.delete_collection(collection.get('id'))
+            self.delete_collection(collection.get("id"))
 
         config_: Dict = ensure_dict(config)
         return self.create_collection(
