@@ -178,6 +178,19 @@ class AlephAPI(object):
         url = self._make_url(f'collections/{collection_id}')
         return self._request('GET', url)
 
+    def delete_collection(self, collection_id: str):
+        """Delete a collection by ID"""
+        url = self._make_url(f"collections/{collection_id}")
+        return self._request("DELETE", url)
+
+    def delete_collection_by_foreign_id(self, foreign_id: str):
+        """Delete a collection by ID"""
+        if foreign_id is None:
+            return None
+        filters = [("foreign_id", foreign_id)]
+        for coll in self.filter_collections(filters=filters):
+            self.delete_collection(col1.get("id"))
+
     def get_entity(self, entity_id: str, publisher: bool = False) -> Dict:
         """Get a single entity by ID."""
         url = self._make_url(f'entities/{entity_id}')
@@ -194,11 +207,14 @@ class AlephAPI(object):
         return None
 
     def load_collection_by_foreign_id(self, foreign_id: str,
-                                      config: Optional[Dict] = None) -> Dict:
-        """Get a collection by its foreign ID, or create one."""
+                                    config: Optional[Dict] = None,
+                                    clear: bool = False) -> Dict:
+        """Get a collection by its foreign ID, or create one. Setting clear will clear any found collection"""
         collection = self.get_collection_by_foreign_id(foreign_id)
         if collection is not None:
-            return collection
+            if not clear:
+                return collection
+            self.delete_collection(collection.get("id"))
 
         config_: Dict = ensure_dict(config)
         return self.create_collection({
