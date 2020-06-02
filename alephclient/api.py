@@ -201,7 +201,7 @@ class AlephAPI(object):
 
     def flush_collection(self, collection_id: str,
                          sync: bool = False):
-        """Delete a collection by ID"""
+        """Empty all contents from a collection by ID"""
         url = self._make_url(f"collections/{collection_id}", sync=sync,
                              keep_metadata=True)
         return self._request("DELETE", url)

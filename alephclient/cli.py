@@ -11,6 +11,13 @@ from alephclient.tasks.bulkload import bulk_load
 log = logging.getLogger(__name__)
 
 
+def _get_id_from_foreign_key(api, foreign_id):
+    collection = api.get_collection_by_foreign_id(foreign_id)
+    if collection is None:
+        raise click.ClickException("Collection does not exist.")
+    return collection.get('id')
+
+
 @click.group()
 @click.option('--host', default=settings.HOST, metavar="HOST", help="Aleph API host URL")  # noqa
 @click.option('--api-key', default=settings.API_KEY, metavar="KEY", help="Aleph API key for authentication")  # noqa
@@ -61,6 +68,62 @@ def bulkload(ctx, mapping_file):
         raise click.ClickException(str(exc))
 
 
+@cli.command('reingest')
+@click.option('-f', '--foreign-id', required=True, help="foreign_id of the collection")  # noqa
+@click.option('--index', is_flag=True, default=False, help="index documents as they are being processed")  # noqa
+@click.pass_context
+def reingest_collection(ctx, foreign_id, index=False):
+    """Trigger a re-ingest on all the documents in the collection."""
+    api = ctx.obj["api"]
+    try:
+        collection_id = _get_id_from_foreign_key(api, foreign_id)
+        api.regingest_collection(collection_id, index=index)
+    except AlephException as exc:
+        raise click.ClickException(exc.message)
+
+
+@cli.command('reindex')
+@click.option('-f', '--foreign-id', required=True, help="foreign_id of the collection")  # noqa
+@click.option('--flush', is_flag=True, default=False, help="flush entities before indexing")  # noqa
+@click.pass_context
+def reindex_collection(ctx, foreign_id, flush=False):
+    """Trigger a re-index of all the entities in the collection."""
+    api = ctx.obj["api"]
+    try:
+        collection_id = _get_id_from_foreign_key(api, foreign_id)
+        api.reindex_collection(collection_id, flush=flush)
+    except AlephException as exc:
+        raise click.ClickException(exc.message)
+
+
+@cli.command('delete')
+@click.option('-f', '--foreign-id', required=True, help="foreign_id of the collection")  # noqa
+@click.option('--sync', is_flag=True, default=False, help="wait for delete to complete")  # noqa
+@click.pass_context
+def delete_collection(ctx, foreign_id, sync=False):
+    """Delete a collection and all its contents."""
+    api = ctx.obj["api"]
+    try:
+        collection_id = _get_id_from_foreign_key(api, foreign_id)
+        api.delete_collection(collection_id, sync=sync)
+    except AlephException as exc:
+        raise click.ClickException(exc.message)
+
+
+@cli.command('flush')
+@click.option('-f', '--foreign-id', required=True, help="foreign_id of the collection")  # noqa
+@click.option('--sync', is_flag=True, default=False, help="wait for delete to complete")  # noqa
+@click.pass_context
+def flush_collection(ctx, foreign_id, sync=False):
+    """Delete a all the contents of a collection."""
+    api = ctx.obj["api"]
+    try:
+        collection_id = _get_id_from_foreign_key(api, foreign_id)
+        api.flush_collection(collection_id, sync=sync)
+    except AlephException as exc:
+        raise click.ClickException(exc.message)
+
+
 @cli.command('write-entities')
 @click.option('-i', '--infile', type=click.File('r'), default='-')  # noqa
 @click.option('-f', '--foreign-id', required=True, help="foreign_id of the collection")  # noqa
@@ -71,8 +134,7 @@ def write_entities(ctx, infile, foreign_id, force=False, unsafe=False):
     """Read entities from standard input and index them."""
     api = ctx.obj["api"]
     try:
-        collection = api.load_collection_by_foreign_id(foreign_id, {})
-        collection_id = collection.get('id')
+        collection_id = _get_id_from_foreign_key(api, foreign_id)
 
         def read_json_stream(stream):
             count = 0
