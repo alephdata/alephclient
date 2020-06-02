@@ -268,7 +268,8 @@ class AlephAPI(object):
         url = self._make_url("collections")
         return self._request("POST", url, json=data)
 
-    def update_collection(self, collection_id: str, data: Dict) -> Dict:
+    def update_collection(self, collection_id: str, data: Dict,
+                          sync: bool = False) -> Dict:
         """Update an existing collection using the given data.
 
         params
@@ -277,7 +278,7 @@ class AlephAPI(object):
         data: dict with foreign_id, label, category etc. See `CollectionSchema`
         for more details.
         """
-        url = self._make_url(f"collections/{collection_id}")
+        url = self._make_url(f"collections/{collection_id}", sync=sync)
         return self._request("PUT", url, json=data)
 
     def stream_entities(self, collection: Optional[Dict] = None,
@@ -370,7 +371,9 @@ class AlephAPI(object):
 
     def ingest_upload(self, collection_id: str,
                       file_path: Optional[Path] = None,
-                      metadata: Optional[Dict] = None) -> Dict:
+                      metadata: Optional[Dict] = None,
+                      sync: bool = False,
+                      index: bool = True) -> Dict:
         """
         Create an empty folder in a collection or upload a document to it
 
@@ -383,7 +386,8 @@ class AlephAPI(object):
         directory contains foreign_id for itself as well as its parent and the
         name of the directory.
         """
-        url = self._make_url("collections/{0}/ingest".format(collection_id))
+        url_path = "collections/{0}/ingest".format(collection_id)
+        url = self._make_url(url_path, sync=sync, index=index)
         if not file_path or file_path.is_dir():
             data = {"meta": json.dumps(metadata)}
             return self._request("POST", url, data=data)

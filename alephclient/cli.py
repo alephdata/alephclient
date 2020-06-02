@@ -37,11 +37,13 @@ def cli(ctx, host, api_key, retries):
 
 @cli.command()
 @click.option('--casefile', is_flag=True, default=False, help='handle as case file')  # noqa
+@click.option('-i', '--noindex', is_flag=True, default=False, help='do not index documents after ingest')  # noqa
 @click.option('-l', '--language', multiple=True, help="language hint: 2-letter language code (ISO 639)")  # noqa
 @click.option('-f', '--foreign-id', required=True, help="foreign_id of the collection")  # noqa
 @click.argument('path', type=click.Path(exists=True))
 @click.pass_context
-def crawldir(ctx, path, foreign_id, language=None, casefile=False):
+def crawldir(ctx, path, foreign_id, language=None,
+             casefile=False, noindex=False):
     """Crawl a directory recursively and upload the documents in it to a
     collection."""
     try:
@@ -50,7 +52,7 @@ def crawldir(ctx, path, foreign_id, language=None, casefile=False):
             'casefile': casefile
         }
         api = ctx.obj["api"]
-        crawl_dir(api, path, foreign_id, config)
+        crawl_dir(api, path, foreign_id, config, index=not noindex)
     except AlephException as exc:
         raise click.ClickException(str(exc))
 
