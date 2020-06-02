@@ -5,8 +5,7 @@ import logging
 from alephclient import settings
 from alephclient.api import AlephAPI
 from alephclient.errors import AlephException
-from alephclient.tasks.crawldir import crawl_dir
-from alephclient.tasks.bulkload import bulk_load
+from alephclient.crawldir import crawl_dir
 
 log = logging.getLogger(__name__)
 
@@ -52,18 +51,6 @@ def crawldir(ctx, path, foreign_id, language=None, casefile=False):
         }
         api = ctx.obj["api"]
         crawl_dir(api, path, foreign_id, config)
-    except AlephException as exc:
-        raise click.ClickException(str(exc))
-
-
-@cli.command()
-@click.argument('mapping_file')
-@click.pass_context
-def bulkload(ctx, mapping_file):
-    """Trigger a load of structured entity data using the submitted mapping."""
-    # TODO: When can we remove this?
-    try:
-        bulk_load(ctx.obj["api"], mapping_file)
     except AlephException as exc:
         raise click.ClickException(str(exc))
 

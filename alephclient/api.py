@@ -280,17 +280,6 @@ class AlephAPI(object):
         url = self._make_url(f"collections/{collection_id}")
         return self._request("PUT", url, json=data)
 
-    def map_collection(self, collection_id: str, mapping: Dict):
-        """Run a bulk entity data mapping on a collection.
-
-        params
-        ------
-        collection_id: id of the collection to update
-        mapping: dict with the entity bulk load mapping.
-        """
-        url = self._make_url(f"collections/{collection_id}/mapping")
-        return self._request("PUT", url, json=mapping)
-
     def stream_entities(self, collection: Optional[Dict] = None,
                         include: Optional[List] = None,
                         schema: Optional[str] = None,
