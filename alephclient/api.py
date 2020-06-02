@@ -178,18 +178,33 @@ class AlephAPI(object):
         url = self._make_url(f'collections/{collection_id}')
         return self._request('GET', url)
 
-    def delete_collection(self, collection_id: str):
+    def reingest_collection(self, collection_id: str,
+                            index: bool = False):
+        """Re-ingest all documents in a collection."""
+        url = self._make_url(f"collections/{collection_id}/reingest",
+                             index=index)
+        return self._request("POST", url)
+
+    def reindex_collection(self, collection_id: str,
+                           flush: bool = False,
+                           sync: bool = False):
+        """Re-index all entities in a collection."""
+        url = self._make_url(f"collections/{collection_id}/reindex",
+                             sync=sync, flush=flush)
+        return self._request("POST", url)
+
+    def delete_collection(self, collection_id: str,
+                          sync: bool = False):
         """Delete a collection by ID"""
-        url = self._make_url(f"collections/{collection_id}")
+        url = self._make_url(f"collections/{collection_id}", sync=sync)
         return self._request("DELETE", url)
 
-    def delete_collection_by_foreign_id(self, foreign_id: str):
+    def flush_collection(self, collection_id: str,
+                         sync: bool = False):
         """Delete a collection by ID"""
-        if foreign_id is None:
-            return None
-        filters = [("foreign_id", foreign_id)]
-        for coll in self.filter_collections(filters=filters):
-            self.delete_collection(col1.get("id"))
+        url = self._make_url(f"collections/{collection_id}", sync=sync,
+                             keep_metadata=True)
+        return self._request("DELETE", url)
 
     def get_entity(self, entity_id: str, publisher: bool = False) -> Dict:
         """Get a single entity by ID."""
@@ -207,14 +222,13 @@ class AlephAPI(object):
         return None
 
     def load_collection_by_foreign_id(self, foreign_id: str,
-                                    config: Optional[Dict] = None,
-                                    clear: bool = False) -> Dict:
-        """Get a collection by its foreign ID, or create one. Setting clear will clear any found collection"""
+                                      config: Optional[Dict] = None
+                                      ) -> Dict:
+        """Get a collection by its foreign ID, or create one. Setting clear
+        will clear any found collection."""
         collection = self.get_collection_by_foreign_id(foreign_id)
         if collection is not None:
-            if not clear:
-                return collection
-            self.delete_collection(collection.get("id"))
+            return collection
 
         config_: Dict = ensure_dict(config)
         return self.create_collection({
