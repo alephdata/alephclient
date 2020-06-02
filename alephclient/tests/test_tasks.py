@@ -42,7 +42,8 @@ class TestCrawldir(object):
                 metadata={
                     'foreign_id': 'feb',
                     'file_name': 'feb'
-                }
+                },
+                index=True
             ),
             mocker.call(
                 2,
@@ -50,7 +51,8 @@ class TestCrawldir(object):
                 metadata={
                     'foreign_id': 'jan',
                     'file_name': 'jan'
-                }
+                },
+                index=True
             ),
             mocker.call(
                 2,
@@ -59,7 +61,8 @@ class TestCrawldir(object):
                     'parent_id': 42,
                     'foreign_id': 'feb/2.txt',
                     'file_name': '2.txt'
-                }
+                },
+                index=True
             ),
             mocker.call(
                 2,
@@ -68,7 +71,8 @@ class TestCrawldir(object):
                     'parent_id': 42,
                     'foreign_id': 'jan/week1',
                     'file_name': 'week1'
-                }
+                },
+                index=True
             ),
             mocker.call(
                 2,
@@ -77,7 +81,8 @@ class TestCrawldir(object):
                     'parent_id': 42,
                     'foreign_id': 'jan/week1/1.txt',
                     'file_name': '1.txt'
-                }
+                },
+                index=True
             ),
         ]
         for call in expected_calls:
