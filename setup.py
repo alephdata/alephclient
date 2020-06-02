@@ -5,7 +5,7 @@ with open('README.md') as f:
 
 setup(
     name='alephclient',
-    version='1.4.1',
+    version='2.0.0',
     description='Command-line client for Aleph API',
     long_description=long_description,
     long_description_content_type='text/markdown',
