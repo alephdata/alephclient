@@ -7,7 +7,7 @@ from alephclient import settings
 from alephclient.api import AlephAPI
 from alephclient.util import backoff
 from alephclient.errors import AlephException
-from memorious.core import get_rate_limit
+from memorious.core import get_rate_limit  # type: ignore
 
 
 def aleph_emit(context, data):
