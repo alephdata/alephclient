@@ -7,6 +7,7 @@ from alephclient import settings
 from alephclient.api import AlephAPI
 from alephclient.util import backoff
 from alephclient.errors import AlephException
+from memorious.core import get_rate_limit
 
 
 def aleph_emit(context, data):
@@ -52,7 +53,11 @@ def aleph_emit(context, data):
         if fh is None:
             return
         file_path = Path(fh.name).resolve()
+
         for try_number in range(api.retries):
+            rate = settings.MEMORIOUS_RATE_LIMIT
+            rate_limit = get_rate_limit('aleph', limit=rate)
+            rate_limit.comply()
             try:
                 res = api.ingest_upload(collection_id, file_path, meta)
                 document_id = res.get('id')
