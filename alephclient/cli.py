@@ -123,7 +123,7 @@ def write_entities(ctx, infile, foreign_id, force=False, unsafe=False):
     """Read entities from standard input and index them."""
     api = ctx.obj["api"]
     try:
-        collection_id = _get_id_from_foreign_key(api, foreign_id)
+        collection = api.load_collection_by_foreign_id(foreign_id)
 
         def read_json_stream(stream):
             count = 0
@@ -137,7 +137,7 @@ def write_entities(ctx, infile, foreign_id, force=False, unsafe=False):
                              foreign_id, count)
                 yield json.loads(line)
 
-        api.write_entities(collection_id, read_json_stream(infile),
+        api.write_entities(collection.get('id'), read_json_stream(infile),
                            unsafe=unsafe, force=force)
     except AlephException as exc:
         raise click.ClickException(exc.message)
