@@ -20,20 +20,20 @@ def _get_id_from_foreign_key(api, foreign_id):
 @click.group()
 @click.option(
     "--host", default=settings.HOST, metavar="HOST", help="Aleph API host URL"
-)  # noqa
+)
 @click.option(
     "--api-key",
     default=settings.API_KEY,
     metavar="KEY",
     help="Aleph API key for authentication",
-)  # noqa
+)
 @click.option(
     "-r",
     "--retries",
     type=int,
     default=settings.MAX_TRIES,
     help="retries upon server failure",
-)  # noqa
+)
 @click.pass_context
 def cli(ctx, host, api_key, retries):
     """API client for Aleph API"""
@@ -49,25 +49,21 @@ def cli(ctx, host, api_key, retries):
 
 
 @cli.command()
-@click.option(
-    "--casefile", is_flag=True, default=False, help="handle as case file"
-)  # noqa
+@click.option("--casefile", is_flag=True, default=False, help="handle as case file")
 @click.option(
     "-i",
     "--noindex",
     is_flag=True,
     default=False,
     help="do not index documents after ingest",
-)  # noqa
+)
 @click.option(
     "-l",
     "--language",
     multiple=True,
     help="language hint: 2-letter language code (ISO 639)",
-)  # noqa
-@click.option(
-    "-f", "--foreign-id", required=True, help="foreign_id of the collection"
-)  # noqa
+)
+@click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
 @click.argument("path", type=click.Path(exists=True))
 @click.pass_context
 def crawldir(ctx, path, foreign_id, language=None, casefile=False, noindex=False):
@@ -82,33 +78,29 @@ def crawldir(ctx, path, foreign_id, language=None, casefile=False, noindex=False
 
 
 @cli.command("reingest")
-@click.option(
-    "-f", "--foreign-id", required=True, help="foreign_id of the collection"
-)  # noqa
+@click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
 @click.option(
     "--index",
     is_flag=True,
     default=False,
     help="index documents as they are being processed",
-)  # noqa
+)
 @click.pass_context
 def reingest_collection(ctx, foreign_id, index=False):
     """Trigger a re-ingest on all the documents in the collection."""
     api = ctx.obj["api"]
     try:
         collection_id = _get_id_from_foreign_key(api, foreign_id)
-        api.regingest_collection(collection_id, index=index)
+        api.reingest_collection(collection_id, index=index)
     except AlephException as exc:
         raise click.ClickException(exc.message)
 
 
 @cli.command("reindex")
-@click.option(
-    "-f", "--foreign-id", required=True, help="foreign_id of the collection"
-)  # noqa
+@click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
 @click.option(
     "--flush", is_flag=True, default=False, help="flush entities before indexing"
-)  # noqa
+)
 @click.pass_context
 def reindex_collection(ctx, foreign_id, flush=False):
     """Trigger a re-index of all the entities in the collection."""
@@ -121,12 +113,8 @@ def reindex_collection(ctx, foreign_id, flush=False):
 
 
 @cli.command("delete")
-@click.option(
-    "-f", "--foreign-id", required=True, help="foreign_id of the collection"
-)  # noqa
-@click.option(
-    "--sync", is_flag=True, default=False, help="wait for delete to complete"
-)  # noqa
+@click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
+@click.option("--sync", is_flag=True, default=False, help="wait for delete to complete")
 @click.pass_context
 def delete_collection(ctx, foreign_id, sync=False):
     """Delete a collection and all its contents."""
@@ -139,12 +127,8 @@ def delete_collection(ctx, foreign_id, sync=False):
 
 
 @cli.command("flush")
-@click.option(
-    "-f", "--foreign-id", required=True, help="foreign_id of the collection"
-)  # noqa
-@click.option(
-    "--sync", is_flag=True, default=False, help="wait for delete to complete"
-)  # noqa
+@click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
+@click.option("--sync", is_flag=True, default=False, help="wait for delete to complete")
 @click.pass_context
 def flush_collection(ctx, foreign_id, sync=False):
     """Delete a all the contents of a collection."""
@@ -157,16 +141,14 @@ def flush_collection(ctx, foreign_id, sync=False):
 
 
 @cli.command("write-entities")
-@click.option("-i", "--infile", type=click.File("r"), default="-")  # noqa
-@click.option(
-    "-f", "--foreign-id", required=True, help="foreign_id of the collection"
-)  # noqa
+@click.option("-i", "--infile", type=click.File("r"), default="-")
+@click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
 @click.option(
     "--force", is_flag=True, default=False, help="continue after server errors"
-)  # noqa
+)
 @click.option(
     "--unsafe", is_flag=True, default=False, help="disable server-side validation"
-)  # noqa
+)
 @click.pass_context
 def write_entities(ctx, infile, foreign_id, force=False, unsafe=False):
     """Read entities from standard input and index them."""
@@ -204,7 +186,7 @@ def write_entities(ctx, infile, foreign_id, force=False, unsafe=False):
     is_flag=True,
     default=False,
     help="Add publisher info from collection context",
-)  # noqa
+)
 @click.pass_context
 def stream_entities(ctx, outfile, schema, foreign_id, publisher):
     """Load entities from the server and print them to stdout."""
