@@ -1,15 +1,14 @@
 import json
-import logging
 import uuid
+import logging
+import pkg_resources
 from itertools import count
 from pathlib import Path
-from typing import Dict, Iterable, Iterator, List, Optional
-
-import pkg_resources
+from urllib.parse import urlencode, urljoin
 from banal import ensure_dict, ensure_list
 from requests import RequestException, Session
 from requests_toolbelt import MultipartEncoder  # type: ignore
-from six.moves.urllib.parse import urlencode, urljoin
+from typing import Dict, Iterable, Iterator, List, Optional
 
 from alephclient import settings
 from alephclient.errors import AlephException
