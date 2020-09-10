@@ -13,13 +13,11 @@ log = logging.getLogger(__name__)
 
 
 class CrawlDirectory(object):
-
-    def __init__(self, api: AlephAPI, collection: Dict, path: Path,
-                 index: bool = True):
+    def __init__(self, api: AlephAPI, collection: Dict, path: Path, index: bool = True):
         self.api = api
         self.index = index
         self.collection = collection
-        self.collection_id = cast(str, collection.get('id'))
+        self.collection_id = cast(str, collection.get("id"))
         self.root = path
         self.queue: Queue = Queue()
         self.queue.put((path, None, 1))
@@ -36,7 +34,7 @@ class CrawlDirectory(object):
                 else:
                     log.error(exc.message)
             except Exception:
-                log.exception('Failed [%s]: %s', self.collection_id, path)
+                log.exception("Failed [%s]: %s", self.collection_id, path)
             finally:
                 self.queue.task_done()
 
@@ -51,19 +49,18 @@ class CrawlDirectory(object):
 
     def upload_path(self, path: Path, parent_id: str, foreign_id: str) -> str:
         metadata = {
-            'foreign_id': foreign_id,
-            'file_name': path.name,
+            "foreign_id": foreign_id,
+            "file_name": path.name,
         }
-        log.info('Upload [%s->%s]: %s', self.collection_id,
-                 parent_id, foreign_id)
+        log.info("Upload [%s->%s]: %s", self.collection_id, parent_id, foreign_id)
         if parent_id is not None:
-            metadata['parent_id'] = parent_id
-        result = self.api.ingest_upload(self.collection_id, path,
-                                        metadata=metadata,
-                                        index=self.index)
-        if 'id' not in result:
-            raise AlephException('Upload failed')
-        return result['id']
+            metadata["parent_id"] = parent_id
+        result = self.api.ingest_upload(
+            self.collection_id, path, metadata=metadata, index=self.index
+        )
+        if "id" not in result:
+            raise AlephException("Upload failed")
+        return result["id"]
 
     def crawl_path(self, parent_id: str, path: Path):
         foreign_id = self.get_foreign_id(path)
@@ -77,8 +74,9 @@ class CrawlDirectory(object):
                 self.queue.put((child, parent_id, 1))
 
 
-def crawl_dir(api: AlephAPI, path: str, foreign_id: str,
-              config: Dict, index: bool = True):
+def crawl_dir(
+    api: AlephAPI, path: str, foreign_id: str, config: Dict, index: bool = True
+):
     """Crawl a directory and upload its content to a collection
 
     params
