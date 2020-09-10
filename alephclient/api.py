@@ -1,7 +1,6 @@
 import json
 import logging
 import uuid
-import warnings
 from itertools import count
 from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Optional
@@ -72,17 +71,6 @@ class EntityResultSet(APIResultSet):
 class EntitySetItemsResultSet(APIResultSet):
     def __init__(self, api: "AlephAPI", url: str, publisher: bool):
         super(EntitySetItemsResultSet, self).__init__(api, url)
-        self.publisher = publisher
-
-    def _patch(self, item):
-        entity = ensure_dict(item.get("entity"))
-        item["entity"] = self.api._patch_entity(entity, self.publisher)
-        return item
-
-
-class LinkageResultSet(APIResultSet):
-    def __init__(self, api: "AlephAPI", url: str, publisher: bool):
-        super(LinkageResultSet, self).__init__(api, url)
         self.publisher = publisher
 
     def _patch(self, item):
@@ -335,11 +323,16 @@ class AlephAPI(object):
             raise AlephException(exc)
 
     def _bulk_chunk(
-        self, collection_id: str, chunk: List, force: bool = False, unsafe: bool = False
+        self,
+        collection_id: str,
+        chunk: List,
+        entityset_id: Optional[str] = None,
+        force: bool = False,
+        unsafe: bool = False,
     ):
         for attempt in count(1):
             url = self._make_url(f"collections/{collection_id}/_bulk")
-            params = {"unsafe": unsafe}
+            params = {"unsafe": unsafe, "entityset_id": entityset_id}
             try:
                 response = self.session.post(url, json=chunk, params=params)
                 response.raise_for_status()
@@ -393,18 +386,6 @@ class AlephAPI(object):
                 yield self._patch_entity(result, publisher=publisher)
         except RequestException as exc:
             raise AlephException(exc)
-
-    def linkages(
-        self, context_ids: Optional[List] = None, publisher: bool = False
-    ) -> "APIResultSet":
-        """Stream all linkages within the given role contexts."""
-        warnings.warn(
-            "Linkages have been migrated to EntitySets of type 'profile'",
-            DeprecationWarning,
-        )
-        filters = [("context_id", c) for c in ensure_list(context_ids)]
-        url = self._make_url("linkages", filters=filters)
-        return LinkageResultSet(self, url, publisher=publisher)
 
     def entitysets(
         self,
