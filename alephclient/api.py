@@ -313,7 +313,7 @@ class AlephAPI(object):
         try:
             res = self.session.get(url, params=params, stream=True)
             res.raise_for_status()
-            for entity in res.iter_lines():
+            for entity in res.iter_lines(chunk_size=None):
                 entity = json.loads(entity)
                 yield self._patch_entity(
                     entity, publisher=publisher, collection=collection
