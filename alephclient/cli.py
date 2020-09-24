@@ -257,5 +257,24 @@ def entitysetitems(ctx, outfile, entityset_id):
         raise click.Abort()
 
 
+@cli.command("make-list")
+@click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
+@click.option("-o", "--outfile", type=click.File("w"), default="-")
+@click.argument("label")
+@click.option("-s", "--summary", type=str)
+@click.pass_context
+def make_list(ctx, foreign_id, outfile, label, summary):
+    """Create a list"""
+    api = ctx.obj["api"]
+    try:
+        collection_id = _get_id_from_foreign_key(api, foreign_id)
+        res = api.create_entityset(collection_id, "list", label, summary)
+        _write_result(outfile, [res])
+    except AlephException as exc:
+        raise click.ClickException(exc.message)
+    except BrokenPipeError:
+        raise click.Abort()
+
+
 if __name__ == "__main__":
     cli()
