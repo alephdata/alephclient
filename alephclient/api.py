@@ -451,15 +451,17 @@ class AlephAPI(object):
         return {}
 
     def create_entityset(
-        self,
-        collection_id: str,
-        type: str,
-        label: str,
-        summary: Optional[str]
+        self, collection_id: str, type: str, label: str, summary: Optional[str]
     ) -> Dict:
         """Create an EntitySet inside a collection"""
         url = self._make_url("entitysets")
-        data = {"collection_id": collection_id, "type": type, "label": label, "summary": summary, "entities": []}
+        data: Dict = {
+            "collection_id": collection_id,
+            "type": type,
+            "label": label,
+            "summary": summary,
+            "entities": [],
+        }
         return self._request("POST", url, data=data)
 
     def delete_entityset(self, entityset_id: str, sync: bool = False):
