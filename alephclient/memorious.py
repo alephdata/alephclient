@@ -3,7 +3,7 @@ from pprint import pprint  # noqa
 from banal import clean_dict  # type: ignore
 from typing import Optional
 
-from servicelayer.cache import make_key
+from servicelayer.cache import make_key  # type: ignore
 from alephclient import settings
 from alephclient.api import AlephAPI
 from alephclient.util import backoff
