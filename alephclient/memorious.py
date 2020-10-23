@@ -3,6 +3,7 @@ from pprint import pprint  # noqa
 from banal import clean_dict  # type: ignore
 from typing import Optional
 
+from servicelayer.cache import make_key
 from alephclient import settings
 from alephclient.api import AlephAPI
 from alephclient.util import backoff
@@ -20,6 +21,10 @@ def aleph_emit(context, data):
     foreign_id = data.get("foreign_id", data.get("request_id", source_url))
     if context.skip_incremental(collection_id, foreign_id, content_hash):
         context.log.info("Skip aleph upload: %s", foreign_id)
+        # Fetch document id from cache
+        document_id = context.get_tag(make_key(collection_id, foreign_id, content_hash))
+        data["aleph_id"] = document_id
+        context.emit(data=data, optional=True)
         return
 
     meta = {
@@ -62,6 +67,9 @@ def aleph_emit(context, data):
                 res = api.ingest_upload(collection_id, file_path, meta)
                 document_id = res.get("id")
                 context.log.info("Aleph document entity ID: %s", document_id)
+                context.set_tag(
+                    make_key(collection_id, foreign_id, content_hash), document_id
+                )
                 data["aleph_id"] = document_id
                 data["aleph_document"] = meta
                 data["aleph_collection_id"] = collection_id
