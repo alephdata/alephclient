@@ -303,7 +303,7 @@ def make_list(ctx, foreign_id, outfile, label, summary):
     try:
         collection_id = _get_id_from_foreign_key(api, foreign_id)
         res = api.create_entityset(collection_id, "list", label, summary)
-        _write_result(outfile, [res])
+        outfile.write(res.get("id"))
     except AlephException as exc:
         raise click.ClickException(exc.message)
     except BrokenPipeError:
