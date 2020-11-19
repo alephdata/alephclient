@@ -109,12 +109,13 @@ class AlephAPI(object):
         url = self.base_url + path
         if query:
             params["q"] = query
+        params_list = list(params.items())
         if filters:
             for key, val in filters:
                 if val is not None:
-                    params["filter:" + key] = val
-        if len(params):
-            params_filter = {k: v for k, v in params.items() if v is not None}
+                    params_list.append(("filter:" + key, val))
+        if len(params_list):
+            params_filter = [(k, v) for k, v in params_list if v is not None]
             url = url + "?" + urlencode(params_filter)
         return url
 
