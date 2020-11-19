@@ -8,7 +8,7 @@ from urllib.parse import urlencode, urljoin
 from banal import ensure_dict, ensure_list
 from requests import RequestException, Session
 from requests_toolbelt import MultipartEncoder  # type: ignore
-from typing import Dict, Iterable, Iterator, List, Optional
+from typing import Dict, Mapping, Iterable, Iterator, List, Optional, Any
 
 from alephclient import settings
 from alephclient.errors import AlephException
@@ -103,13 +103,14 @@ class AlephAPI(object):
         path: str,
         query: Optional[str] = None,
         filters: Optional[List] = None,
-        **params,
+        params: Optional[Mapping[str, Any]] = None,
     ):
         """Construct the target url from given args"""
         url = self.base_url + path
-        if query:
-            params["q"] = query
+        params = params or {}
         params_list = list(params.items())
+        if query:
+            params_list.append(("q", query))
         if filters:
             for key, val in filters:
                 if val is not None:
@@ -171,7 +172,7 @@ class AlephAPI(object):
         schemata: Optional[str] = None,
         filters: Optional[List] = None,
         publisher: bool = False,
-        **params,
+        params: Optional[Mapping[str, Any]] = None,
     ) -> "EntityResultSet":
         """Conduct a search and return the search results."""
         filters_list: List = ensure_list(filters)
@@ -181,7 +182,9 @@ class AlephAPI(object):
             filters_list.append(("schemata", schemata))
         if schema is None and schemata is None:
             filters_list.append(("schemata", "Thing"))
-        url = self._make_url("entities", query=query, filters=filters_list, **params)
+        url = self._make_url(
+            "entities", query=query, filters=filters_list, params=params
+        )
         return EntityResultSet(self, url, publisher)
 
     def get_collection(self, collection_id: str) -> Dict:
@@ -191,28 +194,29 @@ class AlephAPI(object):
 
     def reingest_collection(self, collection_id: str, index: bool = False):
         """Re-ingest all documents in a collection."""
-        url = self._make_url(f"collections/{collection_id}/reingest", index=index)
+        url = self._make_url(
+            f"collections/{collection_id}/reingest", params={"index": index}
+        )
         return self._request("POST", url)
 
     def reindex_collection(
         self, collection_id: str, flush: bool = False, sync: bool = False
     ):
         """Re-index all entities in a collection."""
-        url = self._make_url(
-            f"collections/{collection_id}/reindex", sync=sync, flush=flush
-        )
+        params = {"sync": sync, "flush": flush}
+        url = self._make_url(f"collections/{collection_id}/reindex", params=params)
         return self._request("POST", url)
 
     def delete_collection(self, collection_id: str, sync: bool = False):
         """Delete a collection by ID"""
-        url = self._make_url(f"collections/{collection_id}", sync=sync)
+        params = {"sync": sync}
+        url = self._make_url(f"collections/{collection_id}", params=params)
         return self._request("DELETE", url)
 
     def flush_collection(self, collection_id: str, sync: bool = False):
         """Empty all contents from a collection by ID"""
-        url = self._make_url(
-            f"collections/{collection_id}", sync=sync, keep_metadata=True
-        )
+        params = {"sync": sync, "keep_metadata": True}
+        url = self._make_url(f"collections/{collection_id}", params=params)
         return self._request("DELETE", url)
 
     def get_entity(self, entity_id: str, publisher: bool = False) -> Dict:
@@ -264,7 +268,8 @@ class AlephAPI(object):
         """
         if not query and not filters:
             raise ValueError("One of query or filters is required")
-        url = self._make_url("collections", query=query, filters=filters, **kwargs)
+
+        url = self._make_url("collections", query=query, filters=filters, params=kwargs)
         return APIResultSet(self, url)
 
     def create_collection(self, data: Dict) -> Dict:
@@ -289,7 +294,8 @@ class AlephAPI(object):
         data: dict with foreign_id, label, category etc. See `CollectionSchema`
         for more details.
         """
-        url = self._make_url(f"collections/{collection_id}", sync=sync)
+        params = {"sync": sync}
+        url = self._make_url(f"collections/{collection_id}", params=params)
         return self._request("PUT", url, json=data)
 
     def stream_entities(
@@ -397,9 +403,9 @@ class AlephAPI(object):
         """Stream EntitySets"""
         filters_collection = [("collection_id", collection_id)]
         filters_type = [("type", t) for t in ensure_list(set_types)]
-        url = self._make_url(
-            "entitysets", prefix=prefix, filters=[*filters_collection, *filters_type]
-        )
+        filters = [*filters_collection, *filters_type]
+        params = {"prefix": prefix}
+        url = self._make_url("entitysets", filters=filters, params=params)
         return APIResultSet(self, url)
 
     def entitysetitems(
@@ -429,7 +435,8 @@ class AlephAPI(object):
         name of the directory.
         """
         url_path = "collections/{0}/ingest".format(collection_id)
-        url = self._make_url(url_path, sync=sync, index=index)
+        params = {"sync": sync, "index": index}
+        url = self._make_url(url_path, params=params)
         if not file_path or file_path.is_dir():
             data = {"meta": json.dumps(metadata)}
             return self._request("POST", url, data=data)
@@ -468,5 +475,5 @@ class AlephAPI(object):
 
     def delete_entityset(self, entityset_id: str, sync: bool = False):
         """Delete an EntitySet by id"""
-        url = self._make_url(f"entitysets/{entityset_id}", sync=sync)
+        url = self._make_url(f"entitysets/{entityset_id}", params={"sync": sync})
         return self._request("DELETE", url)

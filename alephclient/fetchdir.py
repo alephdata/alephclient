@@ -47,7 +47,7 @@ def fetch_object(api: AlephAPI, path: Path, entity: Dict, overwrite: bool = Fals
         log.info("Fetch [%s]: %s", path, file_name)
         return fetch_archive(url, object_path)
 
-    filters = (("properties.parent", entity.get("id")),)
+    filters = [("properties.parent", entity.get("id"))]
     results = api.search("", filters=filters, schemata="Document")
     log.info("Directory [%s]: %s (%d children)", path, file_name, len(results))
     for entity in results:
@@ -66,9 +66,11 @@ def fetch_collection(
 ):
     path = _fix_path(prefix)
     collection = api.get_collection_by_foreign_id(foreign_id)
-    filters = (("collection_id", collection.get("id")),)
-    params = {"empty:properties.parent": True}
-    results = api.search("", filters=filters, schemata="Document", **params)
+    if collection is None:
+        return
+    filters = [("collection_id", collection.get("id"))]
+    params = {"empty:properties.parent": "true"}
+    results = api.search("", filters=filters, schemata="Document", params=params)
     label = collection.get("label")
     log.info("Dataset [%s]: %s (%d children)", path, label, len(results))
     for entity in results:
