@@ -1,11 +1,13 @@
 import json
 import click
 import logging
+from pathlib import Path
 
 from alephclient import settings
 from alephclient.api import AlephAPI
 from alephclient.errors import AlephException
 from alephclient.crawldir import crawl_dir
+from alephclient.fetchdir import fetch_collection, fetch_entity
 
 log = logging.getLogger(__name__)
 
@@ -79,6 +81,38 @@ def crawldir(ctx, path, foreign_id, language=None, casefile=False, noindex=False
         config = {"languages": language, "casefile": casefile}
         api = ctx.obj["api"]
         crawl_dir(api, path, foreign_id, config, index=not noindex)
+    except AlephException as exc:
+        raise click.ClickException(str(exc))
+
+
+@cli.command()
+@click.option("-f", "--foreign-id", help="foreign_id of the collection")
+@click.option("-e", "--entity-id", help="id of the root entity to download")
+@click.option(
+    "-p",
+    "--prefix",
+    type=click.Path(writable=True),
+    help="destination path for the download",
+)
+@click.option(
+    "--overwrite",
+    is_flag=True,
+    default=False,
+    help="overwrite existing files",
+)
+@click.pass_context
+def fetchdir(ctx, foreign_id, prefix=None, entity_id=None, overwrite=False):
+    """Recursively download the contents of an Aleph entity or collection and rebuild
+    them as a folder tree."""
+    try:
+        api = ctx.obj["api"]
+        if entity_id is not None:
+            fetch_entity(api, prefix, entity_id, overwrite=overwrite)
+        elif foreign_id is not None:
+            fetch_collection(api, prefix, foreign_id, overwrite=overwrite)
+        else:
+            msg = "Please specify either a foreign_id or entity_id"
+            raise click.ClickException(msg)
     except AlephException as exc:
         raise click.ClickException(str(exc))
 

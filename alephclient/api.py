@@ -170,6 +170,7 @@ class AlephAPI(object):
         schemata: Optional[str] = None,
         filters: Optional[List] = None,
         publisher: bool = False,
+        **params,
     ) -> "EntityResultSet":
         """Conduct a search and return the search results."""
         filters_list: List = ensure_list(filters)
@@ -179,7 +180,7 @@ class AlephAPI(object):
             filters_list.append(("schemata", schemata))
         if schema is None and schemata is None:
             filters_list.append(("schemata", "Thing"))
-        url = self._make_url("entities", query=query, filters=filters_list)
+        url = self._make_url("entities", query=query, filters=filters_list, **params)
         return EntityResultSet(self, url, publisher)
 
     def get_collection(self, collection_id: str) -> Dict:
