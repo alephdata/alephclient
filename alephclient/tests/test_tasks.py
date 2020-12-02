@@ -14,7 +14,7 @@ class TestCrawldir(object):
         mocker.patch.object(self.api, "create_collection")
         mocker.patch.object(self.api, "update_collection")
         mocker.patch.object(self.api, "ingest_upload")
-        crawl_dir(self.api, "alephclient/tests/testdata", "test153", {})
+        crawl_dir(self.api, "alephclient/tests/testdata", "test153", {}, True, False)
         self.api.create_collection.assert_called_once_with(
             {
                 "category": "other",
@@ -32,9 +32,9 @@ class TestCrawldir(object):
             self.api, "load_collection_by_foreign_id", return_value={"id": 2}
         )
         mocker.patch.object(self.api, "update_collection")
-        crawl_dir(self.api, "alephclient/tests/testdata", "test153", {})
+        crawl_dir(self.api, "alephclient/tests/testdata", "test153", {}, True, False)
         base_path = os.path.abspath("alephclient/tests/testdata")
-        assert self.api.ingest_upload.call_count == 5
+        assert self.api.ingest_upload.call_count == 6
         expected_calls = [
             mocker.call(
                 2,

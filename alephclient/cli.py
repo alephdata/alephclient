@@ -66,6 +66,13 @@ def cli(ctx, host, api_key, retries):
     help="do not index documents after ingest",
 )
 @click.option(
+    "-d",
+    "--nodot",
+    is_flag=True,
+    default=False,
+    help="skip dot files",
+)
+@click.option(
     "-l",
     "--language",
     multiple=True,
@@ -74,13 +81,13 @@ def cli(ctx, host, api_key, retries):
 @click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
 @click.argument("path", type=click.Path(exists=True))
 @click.pass_context
-def crawldir(ctx, path, foreign_id, language=None, casefile=False, noindex=False):
+def crawldir(ctx, path, foreign_id, language=None, casefile=False, noindex=False, nodot=False):
     """Crawl a directory recursively and upload the documents in it to a
     collection."""
     try:
         config = {"languages": language, "casefile": casefile}
         api = ctx.obj["api"]
-        crawl_dir(api, path, foreign_id, config, index=not noindex)
+        crawl_dir(api, path, foreign_id, config, index=not noindex, dot=not nodot)
     except AlephException as exc:
         raise click.ClickException(str(exc))
 

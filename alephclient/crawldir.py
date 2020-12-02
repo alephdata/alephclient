@@ -13,9 +13,10 @@ log = logging.getLogger(__name__)
 
 
 class CrawlDirectory(object):
-    def __init__(self, api: AlephAPI, collection: Dict, path: Path, index: bool = True):
+    def __init__(self, api: AlephAPI, collection: Dict, path: Path, index: bool = True, dot: bool = True):
         self.api = api
         self.index = index
+        self.dot = dot
         self.collection = collection
         self.collection_id = cast(str, collection.get("id"))
         self.root = path
@@ -71,11 +72,12 @@ class CrawlDirectory(object):
             parent_id = self.upload_path(path, parent_id, foreign_id)
         if path.is_dir():
             for child in path.iterdir():
-                self.queue.put((child, parent_id, 1))
+                if self.dot or not child.name.startswith('.'):
+                    self.queue.put((child, parent_id, 1))
 
 
 def crawl_dir(
-    api: AlephAPI, path: str, foreign_id: str, config: Dict, index: bool = True
+    api: AlephAPI, path: str, foreign_id: str, config: Dict, index: bool = True, dot: bool = True
 ):
     """Crawl a directory and upload its content to a collection
 
@@ -87,7 +89,7 @@ def crawl_dir(
     """
     root = Path(path).resolve()
     collection = api.load_collection_by_foreign_id(foreign_id, config)
-    crawler = CrawlDirectory(api, collection, root, index=index)
+    crawler = CrawlDirectory(api, collection, root, index=index, dot=dot)
     threads = []
     for i in range(settings.THREADS):
         thread = threading.Thread(target=crawler.execute)
