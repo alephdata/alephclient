@@ -1,5 +1,7 @@
 import logging
 import threading
+import re
+import stat
 from queue import Queue
 from pathlib import Path
 from typing import cast, Optional, Dict
@@ -13,10 +15,13 @@ log = logging.getLogger(__name__)
 
 
 class CrawlDirectory(object):
-    def __init__(self, api: AlephAPI, collection: Dict, path: Path, index: bool = True, dot: bool = True):
+    def __init__(self, api: AlephAPI, collection: Dict, path: Path, index: bool = True, nojunk: bool = False):
         self.api = api
         self.index = index
-        self.dot = dot
+        self.exclude = {
+            "f": re.compile(r"\..*|thumbs\.db|desktop\.ini", re.I),
+            "d": re.compile(r"\..*|\$recycle\.bin|system volume information", re.I)
+        } if nojunk else None
         self.collection = collection
         self.collection_id = cast(str, collection.get("id"))
         self.root = path
@@ -72,12 +77,19 @@ class CrawlDirectory(object):
             parent_id = self.upload_path(path, parent_id, foreign_id)
         if path.is_dir():
             for child in path.iterdir():
-                if self.dot or not child.name.startswith('.'):
-                    self.queue.put((child, parent_id, 1))
+                # The exclude pattern is constructed bearing in mind that will
+                # be called using fullmatch.
+                if self.exclude is not None:
+                    mode = child.stat().st_mode
+                    if stat.S_ISDIR(mode) and self.exclude["d"].fullmatch(child.name):
+                       continue
+                    elif stat.S_ISREG(mode) and self.exclude["f"].fullmatch(child.name):
+                       continue
+                self.queue.put((child, parent_id, 1))
 
 
 def crawl_dir(
-    api: AlephAPI, path: str, foreign_id: str, config: Dict, index: bool = True, dot: bool = True
+    api: AlephAPI, path: str, foreign_id: str, config: Dict, index: bool = True, nojunk: bool = False
 ):
     """Crawl a directory and upload its content to a collection
 
@@ -89,7 +101,7 @@ def crawl_dir(
     """
     root = Path(path).resolve()
     collection = api.load_collection_by_foreign_id(foreign_id, config)
-    crawler = CrawlDirectory(api, collection, root, index=index, dot=dot)
+    crawler = CrawlDirectory(api, collection, root, index=index, nojunk=nojunk)
     threads = []
     for i in range(settings.THREADS):
         thread = threading.Thread(target=crawler.execute)
