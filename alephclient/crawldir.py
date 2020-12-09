@@ -49,6 +49,7 @@ class CrawlDirectory(object):
             path, parent_id = self.queue.get()
 			# None value for path is used as poison, to signal end.
             if path is None:
+                self.queue.task_done()
                 break
             self.backoff_ingest_upload(path, parent_id, self.get_foreign_id(path))
             self.queue.task_done()
@@ -148,7 +149,10 @@ def crawl_dir(
     # Block until the file upload queue is drained.
     crawler.queue.join()
 
+    # Poison the queue to signal end to each consumer.
+    for consumer in consumers:
+        crawler.queue.put((None, None))
+
     # Block until all file upload queue consumers are done.
     for consumer in consumers:
-        crawler.queue.put((None, None)) # Poison the queue to signal end.
         consumer.join()
