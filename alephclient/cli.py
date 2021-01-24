@@ -8,6 +8,7 @@ from alephclient.api import AlephAPI
 from alephclient.errors import AlephException
 from alephclient.crawldir import crawl_dir
 from alephclient.fetchdir import fetch_collection, fetch_entity
+
 log = logging.getLogger(__name__)
 
 
