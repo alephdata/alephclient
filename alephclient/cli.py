@@ -194,6 +194,9 @@ def flush_collection(ctx, foreign_id, sync=False):
     "-e", "--entityset", "entityset_id", help="add entities to the given entity set"
 )
 @click.option(
+    "-c", "--chunksize", default=1000, type=click.INT, help="chunk size when sending to API"
+)
+@click.option(
     "--force", is_flag=True, default=False, help="continue after server errors"
 )
 @click.option(
@@ -201,7 +204,7 @@ def flush_collection(ctx, foreign_id, sync=False):
 )
 @click.pass_context
 def write_entities(
-    ctx, infile, foreign_id, entityset_id=None, force=False, unsafe=False
+    ctx, infile, foreign_id, entityset_id=None, chunksize=1000, force=False, unsafe=False
 ):
     """Read entities from standard input and index them."""
     api = ctx.obj["api"]
@@ -215,13 +218,14 @@ def write_entities(
                 if not line:
                     return
                 count += 1
-                if count % 1000 == 0:
+                if count % chunksize == 0:
                     log.info("[%s] Bulk load entities: %s...", foreign_id, count)
                 yield json.loads(line)
 
         api.write_entities(
             collection.get("id"),
             read_json_stream(infile),
+            chunk_size=chunksize,
             unsafe=unsafe,
             force=force,
             entityset_id=entityset_id,
