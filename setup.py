@@ -38,8 +38,5 @@ setup(
     },
     entry_points={
         "console_scripts": ["alephclient = alephclient.cli:cli"],
-        "memorious.operations": [
-            "aleph_emit = alephclient.memorious:aleph_emit",
-        ],
     },
 )
