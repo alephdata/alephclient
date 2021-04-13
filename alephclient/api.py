@@ -159,7 +159,7 @@ class AlephAPI(object):
             response = self.session.request(method=method, url=url, **kwargs)
             response.raise_for_status()
         except RequestException as exc:
-            raise AlephException(exc)
+            raise AlephException(exc) from exc
 
         if len(response.text):
             return response.json()
@@ -327,7 +327,7 @@ class AlephAPI(object):
                     entity, publisher=publisher, collection=collection
                 )
         except RequestException as exc:
-            raise AlephException(exc)
+            raise AlephException(exc) from exc
 
     def _bulk_chunk(
         self,
@@ -348,7 +348,7 @@ class AlephAPI(object):
                 ae = AlephException(exc)
                 if not ae.transient or attempt > self.retries:
                     if not force:
-                        raise ae
+                        raise ae from exc
                     log.error(ae)
                     return
                 backoff(ae, attempt)
@@ -392,7 +392,7 @@ class AlephAPI(object):
             for result in response.json().get("results", []):
                 yield self._patch_entity(result, publisher=publisher)
         except RequestException as exc:
-            raise AlephException(exc)
+            raise AlephException(exc) from exc
 
     def entitysets(
         self,
@@ -455,7 +455,7 @@ class AlephAPI(object):
                     return self._request("POST", url, data=m, headers=headers)
             except AlephException as ae:
                 if not ae.transient or attempt > self.retries:
-                    raise ae
+                    raise ae from ae
                 backoff(ae, attempt)
         return {}
 
