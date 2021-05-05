@@ -78,16 +78,24 @@ def cli(ctx, host, api_key, retries):
     multiple=True,
     help="language hint: 2-letter language code (ISO 639)",
 )
+@click.option(
+    "-p",
+    "--parallel",
+    default=1,
+	show_default=True,
+	type=click.IntRange(1),
+    help="maximum number of parallel uploads"
+)
 @click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
 @click.argument("path", type=click.Path(exists=True))
 @click.pass_context
-def crawldir(ctx, path, foreign_id, language=None, casefile=False, noindex=False, nojunk=False):
+def crawldir(ctx, path, foreign_id, language=None, casefile=False, noindex=False, nojunk=False, parallel=1):
     """Crawl a directory recursively and upload the documents in it to a
     collection."""
     try:
         config = {"languages": language, "casefile": casefile}
         api = ctx.obj["api"]
-        crawl_dir(api, path, foreign_id, config, index=not noindex, nojunk=nojunk)
+        crawl_dir(api, path, foreign_id, config, index=not noindex, nojunk=nojunk, parallel=parallel)
     except AlephException as exc:
         raise click.ClickException(str(exc))
 
