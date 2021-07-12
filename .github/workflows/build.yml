@@ -22,7 +22,7 @@ jobs:
     - name: Run the tests
       run: pytest
     - name: Install types
-        run: pip install types-request types-setuptools
+      run: pip install types-request types-setuptools
     - name: Validate typing
       run: |
         mypy .
