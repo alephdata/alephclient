@@ -82,20 +82,37 @@ def cli(ctx, host, api_key, retries):
     "-p",
     "--parallel",
     default=1,
-	show_default=True,
-	type=click.IntRange(1),
-    help="maximum number of parallel uploads"
+    show_default=True,
+    type=click.IntRange(1),
+    help="maximum number of parallel uploads",
 )
 @click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
 @click.argument("path", type=click.Path(exists=True))
 @click.pass_context
-def crawldir(ctx, path, foreign_id, language=None, casefile=False, noindex=False, nojunk=False, parallel=1):
+def crawldir(
+    ctx,
+    path,
+    foreign_id,
+    language=None,
+    casefile=False,
+    noindex=False,
+    nojunk=False,
+    parallel=1,
+):
     """Crawl a directory recursively and upload the documents in it to a
     collection."""
     try:
         config = {"languages": language, "casefile": casefile}
         api = ctx.obj["api"]
-        crawl_dir(api, path, foreign_id, config, index=not noindex, nojunk=nojunk, parallel=parallel)
+        crawl_dir(
+            api,
+            path,
+            foreign_id,
+            config,
+            index=not noindex,
+            nojunk=nojunk,
+            parallel=parallel,
+        )
     except AlephException as exc:
         raise click.ClickException(str(exc))
 
@@ -195,14 +212,18 @@ def flush_collection(ctx, foreign_id, sync=False):
         raise click.ClickException(exc.message)
 
 
-@cli.command("write-entities")
+@cli.command("write-entity")
 @click.option("-i", "--infile", type=click.File("r"), default="-")
 @click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
 @click.option(
     "-e", "--entityset", "entityset_id", help="add entities to the given entity set"
 )
 @click.option(
-    "-c", "--chunksize", default=1000, type=click.INT, help="chunk size when sending to API"
+    "-c",
+    "--chunksize",
+    default=1000,
+    type=click.INT,
+    help="chunk size when sending to API",
 )
 @click.option(
     "--force", is_flag=True, default=False, help="continue after server errors"
@@ -211,10 +232,16 @@ def flush_collection(ctx, foreign_id, sync=False):
     "--unsafe", is_flag=True, default=False, help="disable server-side validation"
 )
 @click.pass_context
-def write_entities(
-    ctx, infile, foreign_id, entityset_id=None, chunksize=1000, force=False, unsafe=False
+def write_entity(
+    ctx,
+    infile,
+    foreign_id,
+    entityset_id=None,
+    chunksize=1000,
+    force=False,
+    unsafe=False,
 ):
-    """Read entities from standard input and index them."""
+    """Read A single from standard input and index them."""
     api = ctx.obj["api"]
     try:
         collection = api.load_collection_by_foreign_id(foreign_id)
@@ -229,6 +256,59 @@ def write_entities(
                 if count % chunksize == 0:
                     log.info("[%s] Bulk load entities: %s...", foreign_id, count)
                 yield json.loads(line)
+
+        api.write_entity(
+            collection.get("id"),
+            read_json_stream(infile),
+        )
+    except AlephException as exc:
+        raise click.ClickException(exc.message)
+    except BrokenPipeError:
+        raise click.Abort()
+
+
+@cli.command("write-entities")
+@click.option("-i", "--infile", type=click.File("r"), default="-")
+@click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
+@click.option(
+    "-e", "--entityset", "entityset_id", help="add entities to the given entity set"
+)
+@click.option(
+    "-c",
+    "--chunksize",
+    default=1000,
+    type=click.INT,
+    help="chunk size when sending to API",
+)
+@click.option(
+    "--force", is_flag=True, default=False, help="continue after server errors"
+)
+@click.option(
+    "--unsafe", is_flag=True, default=False, help="disable server-side validation"
+)
+@click.pass_context
+def write_entities(
+    ctx,
+    infile,
+    foreign_id,
+    entityset_id=None,
+    chunksize=1000,
+    force=False,
+    unsafe=False,
+):
+    """Read entities from standard input and index them."""
+    api = ctx.obj["api"]
+    try:
+        collection = api.load_collection_by_foreign_id(foreign_id)
+
+        def read_json_stream(stream):
+            count = 0
+            while True:
+                line = stream.read()
+                if not line:
+                    return
+                else:
+                    return json.loads(line)
 
         api.write_entities(
             collection.get("id"),
