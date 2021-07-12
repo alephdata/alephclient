@@ -15,14 +15,26 @@ from alephclient.util import backoff
 
 log = logging.getLogger(__name__)
 
+
 class CrawlDirectory(object):
-    def __init__(self, api: AlephAPI, collection: Dict, path: Path, index: bool = True, nojunk: bool = False):
+    def __init__(
+        self,
+        api: AlephAPI,
+        collection: Dict,
+        path: Path,
+        index: bool = True,
+        nojunk: bool = False,
+    ):
         self.api = api
         self.index = index
-        self.exclude = {
-            "f": re.compile(r"\..*|thumbs\.db|desktop\.ini", re.I),
-            "d": re.compile(r"\..*|\$recycle\.bin|system volume information", re.I)
-        } if nojunk else None
+        self.exclude = (
+            {
+                "f": re.compile(r"\..*|thumbs\.db|desktop\.ini", re.I),
+                "d": re.compile(r"\..*|\$recycle\.bin|system volume information", re.I),
+            }
+            if nojunk
+            else None
+        )
         self.collection = collection
         self.collection_id = cast(str, collection.get("id"))
         self.root = path
@@ -47,7 +59,7 @@ class CrawlDirectory(object):
     def consume(self):
         while True:
             path, parent_id = self.queue.get()
-			# None value for path is used as poison, to signal end.
+            # None value for path is used as poison, to signal end.
             if path is None:
                 self.queue.task_done()
                 break
@@ -58,7 +70,7 @@ class CrawlDirectory(object):
         # The exclude pattern is constructed bearing in mind that will
         # be called using fullmatch.
         if self.exclude is None:
-            return false
+            return False
         if path.is_dir():
             return self.exclude["d"].fullmatch(path.name)
         return self.exclude["f"].fullmatch(path.name)
@@ -87,7 +99,9 @@ class CrawlDirectory(object):
             return str(path.relative_to(self.root))
         return None
 
-    def backoff_ingest_upload(self, path: PathLike, parent_id: str, foreign_id: str) -> Optional[str]:
+    def backoff_ingest_upload(
+        self, path: PathLike, parent_id: str, foreign_id: str
+    ) -> Optional[str]:
         try_number = 1
         while True:
             try:
@@ -112,14 +126,24 @@ class CrawlDirectory(object):
         if parent_id is not None:
             metadata["parent_id"] = parent_id
         result = self.api.ingest_upload(
-            self.collection_id, path if isinstance(path, Path) else Path(path.path), metadata=metadata, index=self.index
+            self.collection_id,
+            path if isinstance(path, Path) else Path(path.path),
+            metadata=metadata,
+            index=self.index,
         )
         if "id" not in result and not hasattr(result, "id"):
             raise AlephException("Upload failed")
         return result["id"]
 
+
 def crawl_dir(
-    api: AlephAPI, path: str, foreign_id: str, config: Dict, index: bool = True, nojunk: bool = False, parallel: int = 1
+    api: AlephAPI,
+    path: str,
+    foreign_id: str,
+    config: Dict,
+    index: bool = True,
+    nojunk: bool = False,
+    parallel: int = 1,
 ):
     """Crawl a directory and upload its content to a collection
 
