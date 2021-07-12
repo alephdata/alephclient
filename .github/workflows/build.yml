@@ -23,7 +23,7 @@ jobs:
       run: pytest
     - name: Validate typing
       run: |
-        mypy .
+        mypy --install-types | mypy .
     - name: Build a distribution
       run: |
         python setup.py sdist bdist_wheel
