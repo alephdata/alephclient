@@ -121,17 +121,16 @@ class CrawlDirectory(object):
                 return None
 
     def ingest_upload(self, path: PathLike, parent_id: str, foreign_id: str) -> str:
-        path if isinstance(path, Path) else Path(path, Path)
         metadata = {
             "foreign_id": foreign_id,
-            "file_name": path.name,
+            "file_name": path.name if isinstance(path, Path) else "",
         }
         log.info("Upload [%s->%s]: %s", self.collection_id, parent_id, foreign_id)
         if parent_id is not None:
             metadata["parent_id"] = parent_id
         result = self.api.ingest_upload(
             self.collection_id,
-            path,
+            path if isinstance(path, Path) else Path(path, Path),
             metadata=metadata,
             index=self.index,
         )
