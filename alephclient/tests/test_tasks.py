@@ -27,7 +27,7 @@ class TestCrawldir(object):
         )
 
     def test_write_entity(self, mocker):
-        collection_id = 1
+        mocker.patch.object(self.api, "write_entity", return_value={"id": 24})
         entity = {
             "id": 24,
             "schema": "Article",
@@ -39,8 +39,8 @@ class TestCrawldir(object):
             },
         }
 
-        res = self.api.write_entity(collection_id, entity)
-        assert res == 42
+        res = self.api.write_entity(entity)
+        assert res["id"] == 24
 
     def test_ingest(self, mocker):
         mocker.patch.object(self.api, "ingest_upload", return_value={"id": 42})
