@@ -66,7 +66,7 @@ class CrawlDirectory(object):
             self.backoff_ingest_upload(path, parent_id, self.get_foreign_id(path))
             self.queue.task_done()
 
-    def is_excluded(self, path: PathLike) -> bool:
+    def is_excluded(self, path: Path) -> bool:
         # The exclude pattern is constructed bearing in mind that will
         # be called using fullmatch.
         if self.exclude is None:
@@ -75,7 +75,7 @@ class CrawlDirectory(object):
             return self.exclude["d"].match(path.name) is not None
         return self.exclude["f"].match(path.name) is not None
 
-    def scandir(self, path: PathLike, id: str, parent_id: str):
+    def scandir(self, path: Path, id: str, parent_id: str):
         with os.scandir(path) as iterator:
             while True:
                 child = next(iterator, None)
@@ -89,7 +89,7 @@ class CrawlDirectory(object):
                 else:
                     self.queue.put((child, id))
 
-    def get_foreign_id(self, path: PathLike) -> Optional[str]:
+    def get_foreign_id(self, path: Path) -> Optional[str]:
         if path == self.root:
             if path.is_dir():
                 return None
