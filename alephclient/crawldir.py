@@ -96,7 +96,6 @@ class CrawlDirectory(object):
             if path.is_dir():  # type: ignore
                 return None
             return path.name  # type: ignore
-
         path = PurePath(path)
         if path.is_relative_to(self.root):
             return str(path.relative_to(self.root))
@@ -123,7 +122,7 @@ class CrawlDirectory(object):
     def ingest_upload(self, path: PathLike, parent_id: str, foreign_id: str) -> str:
         metadata = {
             "foreign_id": foreign_id,
-            "file_name": path.name if isinstance(path, Path) else "",
+            "file_name": path.name,  # type: ignore
         }
         log.info("Upload [%s->%s]: %s", self.collection_id, parent_id, foreign_id)
         if parent_id is not None:
