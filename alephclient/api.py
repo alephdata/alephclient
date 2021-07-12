@@ -414,7 +414,7 @@ class AlephAPI(object):
         if url is None:
             url = self._make_url("match")
         try:
-            response = self.session.post(url, json=entity, params=params)
+            response = self.session.post(url, json=entity, params=params)  # type: ignore
             response.raise_for_status()
             for result in response.json().get("results", []):
                 yield self._patch_entity(result, publisher=publisher)
