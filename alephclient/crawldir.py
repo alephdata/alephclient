@@ -130,7 +130,7 @@ class CrawlDirectory(object):
             metadata["parent_id"] = parent_id
         result = self.api.ingest_upload(
             self.collection_id,
-            path if isinstance(path, Path) else Path(path.Path),
+            path if isinstance(path, Path) else Path(path.path),
             metadata=metadata,
             index=self.index,
         )
