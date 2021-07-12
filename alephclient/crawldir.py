@@ -73,7 +73,7 @@ class CrawlDirectory(object):
             return False
         if path.is_dir():
             return self.exclude["d"].match(path.name) is not None
-        return self.exclude["f"].match(path.name) is not Nonde
+        return self.exclude["f"].match(path.name) is not None
 
     def scandir(self, path: PathLike, id: str, parent_id: str):
         with os.scandir(path) as iterator:
