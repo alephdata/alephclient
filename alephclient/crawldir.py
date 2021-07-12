@@ -69,9 +69,11 @@ class CrawlDirectory(object):
     def is_excluded(self, path: PathLike) -> bool:
         # The exclude pattern is constructed bearing in mind that will
         # be called using fullmatch.
+        path if isinstance(path, Path) else Path(path, Path)
         if self.exclude is None:
             return False
-        if isinstance(path, Path) and path.is_dir():
+
+        if path.is_dir():
             return self.exclude["d"].match(path.name) is not None
         return self.exclude["f"].match(path.name) is not None
 
@@ -91,9 +93,10 @@ class CrawlDirectory(object):
 
     def get_foreign_id(self, path: PathLike) -> Optional[str]:
         if path == self.root:
-            if path.is_dir():
-                return None
-            return path.name
+            if isinstance(path, Path):
+                if path.is_dir():
+                    return None
+                return path.name
         path = PurePath(path)
         if path.is_relative_to(self.root):
             return str(path.relative_to(self.root))
@@ -118,6 +121,7 @@ class CrawlDirectory(object):
                 return None
 
     def ingest_upload(self, path: PathLike, parent_id: str, foreign_id: str) -> str:
+        path if isinstance(path, Path) else Path(path, Path)
         metadata = {
             "foreign_id": foreign_id,
             "file_name": path.name,
@@ -127,7 +131,7 @@ class CrawlDirectory(object):
             metadata["parent_id"] = parent_id
         result = self.api.ingest_upload(
             self.collection_id,
-            path if isinstance(path, Path) else Path(path.path),
+            path,
             metadata=metadata,
             index=self.index,
         )
