@@ -21,9 +21,11 @@ jobs:
         pip install -e '.[dev]'
     - name: Run the tests
       run: pytest
+    - name: Install types
+        run: pip install types-request types-setuptools
     - name: Validate typing
       run: |
-        mypy --install-types | mypy .
+        mypy .
     - name: Build a distribution
       run: |
         python setup.py sdist bdist_wheel
