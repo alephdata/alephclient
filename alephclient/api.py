@@ -359,10 +359,11 @@ class AlephAPI(object):
 
         params
         ------
-        collection_id: id of the collection to use
+        collection_id: id of the collection to use. This will overwrite any
+        existing collection specified in the entity
         entity: A dict object containing the values of the entity
         """
-
+        entity["collection_id"] = collection_id
         for attempt in count(1):
             url = self._make_url("entities")
             try:

@@ -97,9 +97,11 @@ class CrawlDirectory(object):
                 return None
             return path.name  # type: ignore
         path = PurePath(path)
-        if path.is_relative_to(self.root):
+        # path.is_relative_to is still a bit new, so opting for something... older
+        try:
             return str(path.relative_to(self.root))
-        return None
+        except ValueError:
+            return None
 
     def backoff_ingest_upload(
         self, path: PathLike, parent_id: str, foreign_id: str

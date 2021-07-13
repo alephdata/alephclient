@@ -232,21 +232,12 @@ def flush_collection(ctx, foreign_id, sync=False):
     "--unsafe", is_flag=True, default=False, help="disable server-side validation"
 )
 @click.pass_context
-def write_entity(
-    ctx,
-    infile,
-    foreign_id,
-    entityset_id=None,
-    chunksize=1000,
-    force=False,
-    unsafe=False,
-):
+def write_entity(ctx, infile, foreign_id):
     """Read A single entity from standard input and index it."""
     api = ctx.obj["api"]
 
     try:
         collection = api.load_collection_by_foreign_id(foreign_id)
-        print(collection)
 
         def read_json_stream(stream):
             line = stream.readline()
@@ -299,11 +290,13 @@ def write_entities(
         def read_json_stream(stream):
             count = 0
             while True:
-                line = stream.read()
+                line = stream.readline()
                 if not line:
                     return
-                else:
-                    return json.loads(line)
+                count += 1
+                if count % chunksize == 0:
+                    log.info("[%s] Bulk load entities: %s...", foreign_id, count)
+                yield json.loads(line)
 
         api.write_entities(
             collection.get("id"),
