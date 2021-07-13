@@ -241,21 +241,16 @@ def write_entity(
     force=False,
     unsafe=False,
 ):
-    """Read A single from standard input and index them."""
+    """Read A single entity from standard input and index it."""
     api = ctx.obj["api"]
+
     try:
         collection = api.load_collection_by_foreign_id(foreign_id)
+        print(collection)
 
         def read_json_stream(stream):
-            count = 0
-            while True:
-                line = stream.readline()
-                if not line:
-                    return
-                count += 1
-                if count % chunksize == 0:
-                    log.info("[%s] Bulk load entities: %s...", foreign_id, count)
-                yield json.loads(line)
+            line = stream.readline()
+            return json.loads(line)
 
         api.write_entity(
             collection.get("id"),
