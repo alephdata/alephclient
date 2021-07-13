@@ -363,14 +363,10 @@ class AlephAPI(object):
         entity: A dict object containing the values of the entity
         """
 
-        entit = {}
-        for item in entity:
-            entit = item
-
         for attempt in count(1):
             url = self._make_url("entities")
             try:
-                response = self.session.post(url, json=entit)
+                response = self.session.post(url, json=entity)
                 response.raise_for_status()
                 return
             except RequestException as exc:
