@@ -363,7 +363,9 @@ class AlephAPI(object):
         existing collection specified in the entity
         entity: A dict object containing the values of the entity
         """
-        entity["collection_id"] = collection_id
+        if isinstance(entity, Dict):
+            entity["collection_id"] = collection_id
+
         for attempt in count(1):
             url = self._make_url("entities")
             try:
