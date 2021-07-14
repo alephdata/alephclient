@@ -77,7 +77,7 @@ class CrawlDirectory(object):
             return self.exclude["d"].match(path.name) is not None  # type: ignore
         return self.exclude["f"].match(path.name) is not None  # type: ignore
 
-    def scandir(self, path: PathLike, id: str, parent_id: str):
+    def scandir(self, path: Path, id: str, parent_id: str):
         with os.scandir(path) as iterator:
             while True:
                 child = next(iterator, None)
@@ -91,12 +91,13 @@ class CrawlDirectory(object):
                 else:
                     self.queue.put((child, id))
 
-    def get_foreign_id(self, path: PathLike) -> Optional[str]:
+    def get_foreign_id(self, path: Path) -> Optional[str]:
         if path == self.root:
             if path.is_dir():  # type: ignore
                 return None
             return path.name  # type: ignore
-        path = PurePath(path)
+
+        # path = PurePath(path)
         # path.is_relative_to is still a bit new, so opting for something... older
         try:
             return str(path.relative_to(self.root))
@@ -104,7 +105,7 @@ class CrawlDirectory(object):
             return None
 
     def backoff_ingest_upload(
-        self, path: PathLike, parent_id: str, foreign_id: str
+        self, path: Path, parent_id: str, foreign_id: str
     ) -> Optional[str]:
         try_number = 1
         while True:
@@ -121,7 +122,7 @@ class CrawlDirectory(object):
                 log.exception("Failed [%s]: %s", self.collection_id, path)
                 return None
 
-    def ingest_upload(self, path: PathLike, parent_id: str, foreign_id: str) -> str:
+    def ingest_upload(self, path: Path, parent_id: str, foreign_id: str) -> str:
         metadata = {
             "foreign_id": foreign_id,
             "file_name": path.name,  # type: ignore

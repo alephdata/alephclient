@@ -1,7 +1,7 @@
 from alephclient.api import AlephAPI, APIResultSet
 
 
-class TestApiGetCollection:
+class TestApiCollection:
     fake_url = "http://aleph.test/api/2/"
 
     def setup_method(self, mocker):
@@ -14,3 +14,6 @@ class TestApiGetCollection:
         self.api._request.assert_called_with(
             "GET", "{}collections/{}".format(self.fake_url, collection_id)
         )
+
+    def test_reingest_collection(self, mocker):
+        pass
