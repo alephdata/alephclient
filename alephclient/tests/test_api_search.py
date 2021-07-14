@@ -31,14 +31,14 @@ class TestApiSearch:
         mocker.patch.object(self.api, "_request")
         search_result = self.api.search(self.fake_query, schema)
 
-        assert "schema=".format(schema) in search_result.url
+        assert "schema={}".format(schema) in search_result.url
 
     def test_search_schemata(self, mocker):
         schemata = "Document"
         mocker.patch.object(self.api, "_request")
         search_result = self.api.search(self.fake_query, None, schemata)
 
-        assert "schemata=".format(schemata) in search_result.url
+        assert "schemata={}".format(schemata) in search_result.url
 
     def test_search_params(self, mocker):
         params = {"first": "first", "second": "second"}
