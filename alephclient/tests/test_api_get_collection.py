@@ -8,8 +8,9 @@ class TestApiGetCollection:
         self.api = AlephAPI(host=self.fake_url, api_key="fake_key")
 
     def test_get_collection(self, mocker):
+        collection_id = "8"
         mocker.patch.object(self.api, "_request")
-        self.api.get_collection("8")
+        self.api.get_collection(collection_id)
         self.api._request.assert_called_with(
-            "GET", "{}collections/8".format(self.fake_url)
+            "GET", "{}collections/{}".format(self.fake_url, collection_id)
         )
