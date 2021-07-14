@@ -1,8 +1,4 @@
-import os
-from pathlib import Path
-
-from alephclient.crawldir import crawl_dir
-from alephclient.api import AlephAPI, APIResultSet, EntityResultSet
+from alephclient.api import AlephAPI, APIResultSet
 
 
 class TestApiSearch:
