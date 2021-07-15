@@ -5,7 +5,7 @@ from alephclient.crawldir import crawl_dir
 from alephclient.api import AlephAPI
 
 
-class TestCrawldir(object):
+class TestTasks(object):
     def setup_method(self):
         self.api = AlephAPI(host="http://aleph.test/api/2/", api_key="fake_key")
 
