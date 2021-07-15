@@ -73,9 +73,9 @@ class CrawlDirectory(object):
         if self.exclude is None:
             return False
 
-        if path.is_dir():  # type: ignore
-            return self.exclude["d"].match(path.name) is not None  # type: ignore
-        return self.exclude["f"].match(path.name) is not None  # type: ignore
+        if path.is_dir():
+            return self.exclude["d"].match(path.name) is not None
+        return self.exclude["f"].match(path.name) is not None
 
     def scandir(self, path: Path, id: str, parent_id: str):
         with os.scandir(path) as iterator:
@@ -93,11 +93,11 @@ class CrawlDirectory(object):
 
     def get_foreign_id(self, path: Path) -> Optional[str]:
         if path == self.root:
-            if path.is_dir():  # type: ignore
+            if path.is_dir():
                 return None
-            return path.name  # type: ignore
+            return path.name
 
-        # path = PurePath(path)
+        path = PurePath(path)
         # path.is_relative_to is still a bit new, so opting for something... older
         try:
             return str(path.relative_to(self.root))
@@ -125,14 +125,14 @@ class CrawlDirectory(object):
     def ingest_upload(self, path: Path, parent_id: str, foreign_id: str) -> str:
         metadata = {
             "foreign_id": foreign_id,
-            "file_name": path.name,  # type: ignore
+            "file_name": path.name,
         }
         log.info("Upload [%s->%s]: %s", self.collection_id, parent_id, foreign_id)
         if parent_id is not None:
             metadata["parent_id"] = parent_id
         result = self.api.ingest_upload(
             self.collection_id,
-            path if isinstance(path, Path) else Path(path.path),  # type: ignore
+            path if isinstance(path, Path) else Path(path.path),
             metadata=metadata,
             index=self.index,
         )
