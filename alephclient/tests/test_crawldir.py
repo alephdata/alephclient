@@ -21,3 +21,13 @@ class TestCrawlDirectory:
         crawldir = CrawlDirectory(AlephAPI, {}, path)
         foreign_id = crawldir.get_foreign_id(path)
         assert foreign_id == "2.txt"
+
+    def test_get_foreign_id_different_path(self):
+        path = Path(os.path.join(self.base_path, "lib/test.txt"))
+
+        crawldir = CrawlDirectory(AlephAPI, {}, path)
+        crawldir.root = self.base_path
+
+        foreign_id = crawldir.get_foreign_id(path)
+
+        assert foreign_id == "lib/test.txt"
