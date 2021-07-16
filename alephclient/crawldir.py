@@ -110,7 +110,7 @@ class CrawlDirectory(object):
         try_number = 1
         while True:
             try:
-                return self.ingest_upload(path, parent_id, foreign_id)
+                return self.ingest_upload(Path(path), parent_id, foreign_id)
             except AlephException as err:
                 if err.transient and try_number < self.api.retries:
                     try_number += 1
@@ -132,7 +132,7 @@ class CrawlDirectory(object):
             metadata["parent_id"] = parent_id
         result = self.api.ingest_upload(
             self.collection_id,
-            path if isinstance(path, Path) else Path(path.path),  # type: ignore
+            path,
             metadata=metadata,
             index=self.index,
         )
