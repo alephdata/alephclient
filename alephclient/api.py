@@ -353,17 +353,22 @@ class AlephAPI(object):
                     return
                 backoff(ae, attempt)
 
-    def write_entity(self, collection_id: str, entity: Dict, **kw) -> None:
+    def write_entity(
+        self, collection_id: str, entity_id: str, entity: Dict, **kw
+    ) -> None:
         """Create a single entity via the API, in the given
         collection.
 
         params
         ------
         collection_id: id of the collection to use. This will overwrite any
-        existing collection specified in the entity
+        existing collection specified in the entity dict
+        entity_id: id for the entity to be created. This will overwrite any
+        existing entity specified in the entity dict
         entity: A dict object containing the values of the entity
         """
         entity["collection_id"] = collection_id
+        entity["id"] = entity_id
 
         for attempt in count(1):
             url = self._make_url("entities")
