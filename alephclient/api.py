@@ -353,7 +353,7 @@ class AlephAPI(object):
                     return
                 backoff(ae, attempt)
 
-    def write_entity(self, collection_id: str, entity: Iterable, **kw) -> None:
+    def write_entity(self, collection_id: str, entity: Dict, **kw) -> None:
         """Create a single entity via the API, in the given
         collection.
 
@@ -363,8 +363,7 @@ class AlephAPI(object):
         existing collection specified in the entity
         entity: A dict object containing the values of the entity
         """
-        if isinstance(entity, Dict):
-            entity["collection_id"] = collection_id
+        entity["collection_id"] = collection_id
 
         for attempt in count(1):
             url = self._make_url("entities")
@@ -376,7 +375,7 @@ class AlephAPI(object):
                 ae = AlephException(exc)
                 if not ae.transient or attempt > self.retries:
                     log.error(ae)
-                    raise RequestException
+                    raise exc
                 backoff(ae, attempt)
 
     def write_entities(

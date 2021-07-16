@@ -50,7 +50,7 @@ class CrawlDirectory(object):
         while not self.scan_queue.empty():
             path, parent_id = self.scan_queue.get()
             id = None
-            foreign_id = self.get_foreign_id(path)
+            foreign_id = self.get_foreign_id(Path(path))
             if foreign_id is not None:
                 id = self.backoff_ingest_upload(path, parent_id, foreign_id)
             self.scandir(path, id, parent_id)
@@ -63,7 +63,7 @@ class CrawlDirectory(object):
             if path is None:
                 self.queue.task_done()
                 break
-            self.backoff_ingest_upload(path, parent_id, self.get_foreign_id(path))
+            self.backoff_ingest_upload(path, parent_id, self.get_foreign_id(Path(path)))
             self.queue.task_done()
 
     def is_excluded(self, path: PathLike) -> bool:
@@ -98,7 +98,6 @@ class CrawlDirectory(object):
                 return None
             return path.name
 
-        path = PurePath(path)  # type: ignore
         # path.is_relative_to is still a bit new, so opting for something... older
         try:
             return str(path.relative_to(self.root))
