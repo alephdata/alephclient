@@ -353,7 +353,7 @@ class AlephAPI(object):
                     return
                 backoff(ae, attempt)
 
-    def write_entity(self, collection_id: str, entity: Iterable, **kw):
+    def write_entity(self, collection_id: str, entity: Iterable, **kw) -> None:
         """Create a single entity via the API, in the given
         collection.
 
@@ -376,7 +376,7 @@ class AlephAPI(object):
                 ae = AlephException(exc)
                 if not ae.transient or attempt > self.retries:
                     log.error(ae)
-                    return
+                    raise RequestException
                 backoff(ae, attempt)
 
     def write_entities(
