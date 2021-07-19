@@ -215,9 +215,6 @@ def flush_collection(ctx, foreign_id, sync=False):
 @cli.command("write-entity")
 @click.option("-i", "--infile", type=click.File("r"), default="-")
 @click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
-@click.option(
-    "-e", "--entityset", "entityset_id", help="add entities to the given entity set"
-)
 @click.pass_context
 def write_entity(ctx, infile, foreign_id):
     """Read A single entity from standard input and index it."""
