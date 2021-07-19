@@ -5,7 +5,7 @@ from alephclient.crawldir import crawl_dir
 from alephclient.api import AlephAPI
 
 
-class TestCrawldir(object):
+class TestTasks(object):
     def setup_method(self):
         self.api = AlephAPI(host="http://aleph.test/api/2/", api_key="fake_key")
 
@@ -25,6 +25,23 @@ class TestCrawldir(object):
                 "casefile": False,
             }
         )
+
+    def test_write_entity(self, mocker):
+        mocker.patch.object(self.api, "write_entity", return_value={"id": 24})
+        collection_id = 8
+        entity = {
+            "id": 24,
+            "schema": "Article",
+            "properties": {
+                "title": "",
+                "author": "",
+                "publishedAt": "",
+                "bodyText": "",
+            },
+        }
+
+        res = self.api.write_entity(collection_id, entity)
+        assert res["id"] == 24
 
     def test_ingest(self, mocker):
         mocker.patch.object(self.api, "ingest_upload", return_value={"id": 42})
