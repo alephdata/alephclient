@@ -371,7 +371,10 @@ class AlephAPI(object):
         entity["id"] = entity_id
 
         for attempt in count(1):
-            url = self._make_url("entities")
+            if entity_id is not None:
+                url = self._make_url("entities/{}").format(entity_id)
+            else:
+                url = self._make_url("entities")
             try:
                 response = self.session.post(url, json=entity)
                 response.raise_for_status()
