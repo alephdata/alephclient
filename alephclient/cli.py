@@ -218,19 +218,6 @@ def flush_collection(ctx, foreign_id, sync=False):
 @click.option(
     "-e", "--entityset", "entityset_id", help="add entities to the given entity set"
 )
-@click.option(
-    "-c",
-    "--chunksize",
-    default=1000,
-    type=click.INT,
-    help="chunk size when sending to API",
-)
-@click.option(
-    "--force", is_flag=True, default=False, help="continue after server errors"
-)
-@click.option(
-    "--unsafe", is_flag=True, default=False, help="disable server-side validation"
-)
 @click.pass_context
 def write_entity(ctx, infile, foreign_id):
     """Read A single entity from standard input and index it."""
