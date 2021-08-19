@@ -386,6 +386,8 @@ class AlephAPI(object):
                     raise exc
                 backoff(ae, attempt)
 
+        return {}
+
     def write_entities(
         self, collection_id: str, entities: Iterable, chunk_size: int = 1000, **kw
     ):
