@@ -355,7 +355,7 @@ class AlephAPI(object):
 
     def write_entity(
         self, collection_id: str, entity: Dict, entity_id: str = None, **kw
-    ) -> None:
+    ) -> Dict:
         """Create a single entity via the API, in the given
         collection.
 
@@ -368,7 +368,9 @@ class AlephAPI(object):
         entity: A dict object containing the values of the entity
         """
         entity["collection_id"] = collection_id
-        entity["id"] = entity_id
+
+        if entity_id is not None:
+            entity["id"] = entity_id
 
         for attempt in count(1):
             if entity_id is not None:
