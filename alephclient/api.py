@@ -376,9 +376,7 @@ class AlephAPI(object):
             else:
                 url = self._make_url("entities")
             try:
-                response = self.session.post(url, json=entity)
-                response.raise_for_status()
-                return
+                return self.session.post(url, json=entity)
             except RequestException as exc:
                 ae = AlephException(exc)
                 if not ae.transient or attempt > self.retries:
