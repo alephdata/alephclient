@@ -378,7 +378,7 @@ class AlephAPI(object):
             else:
                 url = self._make_url("entities")
             try:
-                return self._request("POST", url, data=entity)
+                return self._request("POST", url, json=json.dumps(entity))
             except RequestException as exc:
                 ae = AlephException(exc)
                 if not ae.transient or attempt > self.retries:
