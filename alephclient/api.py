@@ -256,7 +256,7 @@ class AlephAPI(object):
         )
 
     def filter_collections(
-        self, query: str = None, filters: Optional[List] = None, **kwargs
+        self, query: Optional[str] = None, filters: Optional[List] = None, **kwargs
     ) -> "APIResultSet":
         """Filter collections for the given query and/or filters.
 
@@ -354,7 +354,7 @@ class AlephAPI(object):
                 backoff(ae, attempt)
 
     def write_entity(
-        self, collection_id: str, entity: Dict, entity_id: str = None, **kw
+        self, collection_id: str, entity: Dict, entity_id: Optional[str] = None, **kw
     ) -> Dict:
         """Create a single entity via the API, in the given
         collection.
@@ -414,7 +414,7 @@ class AlephAPI(object):
         self,
         entity: Dict,
         collection_ids: Optional[str] = None,
-        url: str = None,
+        url: Optional[str] = None,
         publisher: bool = False,
     ) -> Iterator[List]:
         """Find similar entities given a sample entity."""
