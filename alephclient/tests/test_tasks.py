@@ -3,12 +3,10 @@ from pathlib import Path
 
 from alephclient.crawldir import crawl_dir
 from alephclient.api import AlephAPI
-import os
 
 class TestTasks(object):
     def setup_method(self):
-        #self.api = AlephAPI(host="http://aleph.test/api/2/", api_key="fake_key")
-        self.api = AlephAPI(host="https://aleph.occrp.org/api/2/", api_key=os.environ.get('ALEPH_API_KEY'))
+        self.api = AlephAPI(host="http://aleph.test/api/2/", api_key="fake_key")
 
     def test_new_collection(self, mocker):
         mocker.patch.object(self.api, "filter_collections", return_value=[])
@@ -43,6 +41,7 @@ class TestTasks(object):
 
         res = self.api.write_entity(collection_id, entity)
         assert res["id"] == 24
+
 
     def test_delete_entity(self, mocker):
         mocker.patch.object(self.api, "write_entity", return_value={"id": 24})
