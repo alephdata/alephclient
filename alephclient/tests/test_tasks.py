@@ -58,7 +58,7 @@ class TestTasks(object):
         }
 
         res = self.api.write_entity(collection_id, entity)
-        assert res['id'] == eid
+        assert res['id'] == 24
         dres = self.api.delete_entity(eid)
         assert dres  == {}
 
