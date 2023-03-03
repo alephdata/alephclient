@@ -1,13 +1,14 @@
 import json
-import click
 import logging
-from pathlib import Path
+
+import click
 
 from alephclient import settings
 from alephclient.api import AlephAPI
-from alephclient.errors import AlephException
 from alephclient.crawldir import crawl_dir
+from alephclient.errors import AlephException
 from alephclient.fetchdir import fetch_collection, fetch_entity
+from alephclient.load_catalog import load_catalog
 
 log = logging.getLogger(__name__)
 
@@ -290,6 +291,58 @@ def write_entities(
             force=force,
             entityset_id=entityset_id,
         )
+    except AlephException as exc:
+        raise click.ClickException(exc.message)
+    except BrokenPipeError:
+        raise click.Abort()
+
+
+@cli.command("load-catalog")
+@click.argument("url")
+@click.option(
+    "-c",
+    "--chunksize",
+    default=1000,
+    type=click.INT,
+    help="chunk size when sending to API",
+)
+@click.option(
+    "--force", is_flag=True, default=False, help="continue after server errors"
+)
+@click.option(
+    "--unsafe", is_flag=True, default=False, help="disable server-side validation"
+)
+@click.option("--frequency", help="Add frequency label to collections")
+@click.option("--exclude", help="Exclude dataset(s)", multiple=True)
+@click.option("--include", help="Include dataset(s)", multiple=True)
+@click.pass_context
+def _load_catalog(
+    ctx,
+    url,
+    chunksize=1000,
+    force=False,
+    unsafe=False,
+    frequency=None,
+    exclude=[],
+    include=[],
+):
+    """Import a catalog from a given url"""
+    api = ctx.obj["api"]
+    try:
+        for collection_id, loader in load_catalog(
+            api,
+            url,
+            exclude_datasets=exclude,
+            include_datasets=include,
+            frequency=frequency,
+        ):
+            api.write_entities(
+                collection_id,
+                loader,
+                chunk_size=chunksize,
+                unsafe=unsafe,
+                force=force,
+            )
     except AlephException as exc:
         raise click.ClickException(exc.message)
     except BrokenPipeError:
