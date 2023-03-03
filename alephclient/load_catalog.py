@@ -41,7 +41,7 @@ def load_catalog(
     for dataset in catalog["datasets"]:
         foreign_id = dataset["name"]
 
-        if "type" in dataset and dataset["type"] != "collection":
+        if "type" in dataset and dataset["type"] == "collection":
             continue
         if exclude_datasets and foreign_id in exclude_datasets:
             continue
