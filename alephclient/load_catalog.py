@@ -18,7 +18,8 @@ MIME_TYPE = "application/json+ftm"
 def stream_resource(url: str, foreign_id: str) -> Generator[EntityData, None, None]:
     res = requests.get(url, stream=True)
     if not res.ok:
-        raise requests.HTTPError(res.status_code)
+        log.error(f"[{foreign_id}] {res.status_code}")
+        return
 
     for ix, data in enumerate(res.iter_lines()):
         if ix and ix % 1000 == 0:
@@ -35,7 +36,7 @@ def load_catalog(
 ) -> Generator[Loader, None, None]:
     res = requests.get(url)
     if not res.ok:
-        raise requests.HTTPError(res.status_code)
+        raise requests.HTTPError(f"Fetch catalog failed: {res.status_code}")
 
     catalog = res.json()
     for dataset in catalog["datasets"]:
@@ -64,18 +65,18 @@ def load_catalog(
             data["frequency"] = dataset.get("frequency", frequency)
 
         if aleph_collection is not None:
-            log.info("[%s] Creating collection ..." % foreign_id)
+            log.info("[%s] Updating collection metadata ..." % foreign_id)
             aleph_collection = api.update_collection(
                 aleph_collection["collection_id"], data
             )
         else:
-            log.info("[%s] Updating collection metadata ..." % foreign_id)
+            log.info("[%s] Creating collection ..." % foreign_id)
             aleph_collection = api.create_collection(
                 {**data, **{"foreign_id": dataset["name"]}}
             )
 
         for resource in ensure_list(dataset.get("resources")):
             if resource["mime_type"] == MIME_TYPE:
-                yield aleph_collection["collection_id"], stream_resource(
-                    resource["url"], foreign_id
-                )
+                loader = stream_resource(resource["url"], foreign_id)
+                if loader is not None:
+                    yield aleph_collection["collection_id"], loader
