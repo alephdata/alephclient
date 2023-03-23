@@ -66,6 +66,9 @@ def load_catalog(
 
         if aleph_collection is not None:
             log.info("[%s] Updating collection metadata ..." % foreign_id)
+            data.pop(
+                "category", None
+            )  # don't overwrite existing (probably user changed) category
             aleph_collection = api.update_collection(
                 aleph_collection["collection_id"], data
             )
