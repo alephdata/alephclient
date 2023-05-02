@@ -44,6 +44,8 @@ def load_catalog(
 
         if "type" in dataset and dataset["type"] == "collection":
             continue
+        if dataset.get("children") or dataset.get("datasets"):
+            continue
         if exclude_datasets and foreign_id in exclude_datasets:
             continue
         if include_datasets and foreign_id not in include_datasets:
@@ -53,7 +55,9 @@ def load_catalog(
         data = {
             "label": dataset["title"],
             "summary": (
-                dataset.get("description", "") + "\n\n" + dataset.get("summary", "")
+                dataset.get("description", "")
+                or "" + "\n\n" + dataset.get("summary", "")  # noqa
+                or ""  # noqa
             ).strip(),
             "publisher": dataset.get("publisher", {}).get("name"),
             "publisher_url": dataset.get("publisher", {}).get("url"),
