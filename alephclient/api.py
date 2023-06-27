@@ -7,6 +7,7 @@ from pathlib import Path
 from urllib.parse import urlencode, urljoin
 from banal import ensure_dict, ensure_list
 from requests import RequestException, Session
+from requests.exceptions import HTTPError
 from requests_toolbelt import MultipartEncoder  # type: ignore
 from typing import Dict, Mapping, Iterable, Iterator, List, Optional, Any
 
@@ -158,7 +159,7 @@ class AlephAPI(object):
         try:
             response = self.session.request(method=method, url=url, **kwargs)
             response.raise_for_status()
-        except RequestException as exc:
+        except (RequestException, HTTPError) as exc:
             raise AlephException(exc) from exc
 
         if len(response.text):
@@ -326,7 +327,7 @@ class AlephAPI(object):
                 yield self._patch_entity(
                     entity, publisher=publisher, collection=collection
                 )
-        except RequestException as exc:
+        except (RequestException, HTTPError) as exc:
             raise AlephException(exc) from exc
 
     def _bulk_chunk(
@@ -344,7 +345,7 @@ class AlephAPI(object):
                 response = self.session.post(url, json=chunk, params=params)
                 response.raise_for_status()
                 return
-            except RequestException as exc:
+            except (RequestException, HTTPError) as exc:
                 ae = AlephException(exc)
                 if not ae.transient or attempt > self.retries:
                     if not force:
@@ -426,7 +427,7 @@ class AlephAPI(object):
             response.raise_for_status()
             for result in response.json().get("results", []):
                 yield self._patch_entity(result, publisher=publisher)
-        except RequestException as exc:
+        except (RequestException, HTTPError) as exc:
             raise AlephException(exc) from exc
 
     def entitysets(
