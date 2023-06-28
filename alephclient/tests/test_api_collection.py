@@ -1,4 +1,14 @@
+import pytest
+from requests import Response
+from alephclient.errors import AlephException
 from alephclient.api import AlephAPI, APIResultSet
+
+
+@pytest.fixture
+def http_error_response():
+    response = Response()
+    response.status_code = 502
+    return response
 
 
 class TestApiCollection:
@@ -6,6 +16,19 @@ class TestApiCollection:
 
     def setup_method(self, mocker):
         self.api = AlephAPI(host=self.fake_url, api_key="fake_key")
+
+    def test_502(self, mocker, http_error_response):
+        # Test that the _request method raises AlephException
+        # if a 4XX or 5XX HTTP status code is encountered.
+        collection_id = "8"
+
+        mocker.patch.object(
+            self.api.session, "request",
+            return_value=http_error_response,
+        )
+
+        with pytest.raises(AlephException):
+            self.api.get_collection(collection_id)
 
     def test_get_collection(self, mocker):
         collection_id = "8"
