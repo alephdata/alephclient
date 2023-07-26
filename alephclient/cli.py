@@ -254,7 +254,10 @@ def write_entity(ctx, infile, foreign_id):
     "--force", is_flag=True, default=False, help="continue after server errors"
 )
 @click.option(
-    "--unsafe", is_flag=True, default=False, help="disable server-side validation"
+    "--unsafe", is_flag=True, default=False, help="allow references to archive hashes"
+)
+@click.option(
+    "--cleaned", is_flag=True, default=False, help="disable server-side validation for all types"
 )
 @click.pass_context
 def write_entities(
@@ -265,6 +268,7 @@ def write_entities(
     chunksize=1000,
     force=False,
     unsafe=False,
+    cleaned=False
 ):
     """Read entities from standard input and index them."""
     api = ctx.obj["api"]
@@ -288,6 +292,7 @@ def write_entities(
             chunk_size=chunksize,
             unsafe=unsafe,
             force=force,
+            cleaned=cleaned,
             entityset_id=entityset_id,
         )
     except AlephException as exc:

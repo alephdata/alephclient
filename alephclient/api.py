@@ -337,10 +337,15 @@ class AlephAPI(object):
         entityset_id: Optional[str] = None,
         force: bool = False,
         unsafe: bool = False,
+        cleaned: bool = False
     ):
         for attempt in count(1):
             url = self._make_url(f"collections/{collection_id}/_bulk")
-            params = {"unsafe": unsafe, "entityset_id": entityset_id}
+            params = {"entityset_id": entityset_id}
+            if unsafe:
+                params['safe'] = not unsafe
+            if cleaned:
+                params['cleaned'] = cleaned
             try:
                 response = self.session.post(url, json=chunk, params=params)
                 response.raise_for_status()
