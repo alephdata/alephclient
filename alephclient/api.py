@@ -345,7 +345,7 @@ class AlephAPI(object):
             if unsafe:
                 params['safe'] = not unsafe
             if cleaned:
-                params['cleaned'] = cleaned
+                params['clean'] = not cleaned
             try:
                 response = self.session.post(url, json=chunk, params=params)
                 response.raise_for_status()
