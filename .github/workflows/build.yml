@@ -18,6 +18,7 @@ jobs:
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
+        pip install setuptools
         pip install -e '.[dev]'
     - name: Run the tests
       run: pytest
