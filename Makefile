@@ -7,6 +7,9 @@ install:
 test: install
 	pytest
 
+typecheck: install
+	mypy alephclient/	
+
 dists: install
 	python setup.py sdist
 	python setup.py bdist_wheel
