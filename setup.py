@@ -34,6 +34,8 @@ setup(
             "wheel",
             "pytest",
             "pytest-mock >= 1.10.0",
+            "types-requests",
+            "types-setuptools",
         ]
     },
     entry_points={
