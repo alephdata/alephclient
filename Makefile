@@ -4,13 +4,13 @@ all: clean test dists
 install:
 	pip install -q -e ".[dev]"
 
-test: install
+test:
 	pytest
 
-typecheck: install
+typecheck:
 	mypy alephclient/	
 
-dists: install
+dists:
 	python setup.py sdist
 	python setup.py bdist_wheel
 
