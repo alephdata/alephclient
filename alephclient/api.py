@@ -343,9 +343,9 @@ class AlephAPI(object):
             url = self._make_url(f"collections/{collection_id}/_bulk")
             params = {"entityset_id": entityset_id}
             if unsafe:
-                params['safe'] = not unsafe
+                params["safe"] = "false"
             if cleaned:
-                params['clean'] = not cleaned
+                params["clean"] = "false"
             try:
                 response = self.session.post(url, json=chunk, params=params)
                 response.raise_for_status()
