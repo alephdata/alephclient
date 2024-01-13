@@ -237,6 +237,19 @@ def write_entity(ctx, infile, foreign_id):
         raise click.Abort()
 
 
+@cli.command("delete-entity")
+@click.argument("entity_id", required=True)
+@click.pass_context
+def delete_entity(ctx, entity_id):
+    """Delete a single entity from standard input"""
+    api = ctx.obj['api']
+    entity_id = entity_id.strip()
+    try:
+        api.delete_entity(entity_id)
+    except Exception as exc:
+        raise click.ClickException(exc.message)
+
+
 @cli.command("write-entities")
 @click.option("-i", "--infile", type=click.File("r"), default="-")
 @click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
