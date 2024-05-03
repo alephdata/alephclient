@@ -86,7 +86,7 @@ def cli(ctx, host, api_key, retries):
     type=click.IntRange(1),
     help="maximum number of parallel uploads",
 )
-@click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
+@click.option("-f", "--foreign-id", required=True, help="foreign-id of the collection")
 @click.argument("path", type=click.Path(exists=True))
 @click.pass_context
 def crawldir(
