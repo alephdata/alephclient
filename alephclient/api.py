@@ -1,4 +1,4 @@
-import importlib
+import importlib.metadata
 import json
 import uuid
 import logging
