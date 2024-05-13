@@ -226,6 +226,11 @@ class AlephAPI(object):
         entity = self._request("GET", url)
         return self._patch_entity(entity, publisher)
 
+    def delete_entity(self, entity_id: str) -> Dict:
+        """Delete a single entity by ID."""
+        url = self._make_url(f"entities/{entity_id}")
+        return self._request("DELETE", url)
+
     def get_collection_by_foreign_id(self, foreign_id: str) -> Optional[Dict]:
         """Get a dict representing a collection based on its foreign ID."""
         if foreign_id is None:
