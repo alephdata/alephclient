@@ -4,6 +4,7 @@ from pathlib import Path
 from alephclient.crawldir import crawl_dir
 from alephclient.api import AlephAPI
 
+
 class TestTasks(object):
     def setup_method(self):
         self.api = AlephAPI(host="http://aleph.test/api/2/", api_key="fake_key")
@@ -42,9 +43,9 @@ class TestTasks(object):
         res = self.api.write_entity(collection_id, entity)
         assert res["id"] == 24
 
-
     def test_delete_entity(self, mocker):
         mocker.patch.object(self.api, "write_entity", return_value={"id": 24})
+        mocker.patch.object(self.api, "_request")
         collection_id = 8
         entity = {
             "id": 24,
@@ -58,10 +59,11 @@ class TestTasks(object):
         }
 
         res = self.api.write_entity(collection_id, entity)
-        assert res['id'] == 24
-        dres = self.api.delete_entity(eid)
-        assert dres  == {}
-
+        assert res["id"] == 24
+        self.api.delete_entity(res["id"])
+        self.api._request.assert_called_once_with(
+            "DELETE", "http://aleph.test/api/2/entities/24"
+        )
 
     def test_ingest(self, mocker):
         mocker.patch.object(self.api, "ingest_upload", return_value={"id": 42})
