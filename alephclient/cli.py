@@ -1,6 +1,7 @@
 import json
 import click
 import logging
+import sys
 from pathlib import Path
 
 from alephclient import settings
@@ -296,7 +297,10 @@ def write_entities(
                     return
                 count += 1
                 if count % chunksize == 0:
-                    log.info("[%s] Bulk load entities: %s...", foreign_id, count)
+                    if sys.stdout.isatty():
+                        print(f"\r\x1b[K[{foreign_id}] Bulk load entities: {count:_}...", end='')
+                    else:
+                        log.info(f"[{foreign_id}] Bulk load entities: {count:_}...")
                 yield json.loads(line)
 
         api.write_entities(
@@ -312,6 +316,9 @@ def write_entities(
         raise click.ClickException(exc.message)
     except BrokenPipeError:
         raise click.Abort()
+    finally:
+        if sys.stdout.isatty():
+            print()
 
 
 @cli.command("stream-entities")
