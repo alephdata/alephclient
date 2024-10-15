@@ -213,6 +213,19 @@ def flush_collection(ctx, foreign_id, sync=False):
         raise click.ClickException(exc.message)
 
 
+@cli.command("touch")
+@click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")
+@click.pass_context
+def touch_collection(ctx, foreign_id):
+    """Update a collection's content update date."""
+    api = ctx.obj["api"]
+    try:
+        collection_id = _get_id_from_foreign_key(api, foreign_id)
+        api.touch_collection(collection_id)
+    except AlephException as exc:
+        raise click.ClickException(exc.message)
+
+
 @cli.command("write-entity")
 @click.option("-i", "--infile", type=click.File("r"), default="-")
 @click.option("-f", "--foreign-id", required=True, help="foreign_id of the collection")

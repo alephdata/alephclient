@@ -220,6 +220,11 @@ class AlephAPI(object):
         url = self._make_url(f"collections/{collection_id}", params=params)
         return self._request("DELETE", url)
 
+    def touch_collection(self, collection_id: str) -> None:
+        """Update the content update date of a collection by ID"""
+        url = self._make_url(f"collections/{collection_id}/touch")
+        return self._request("POST", url)
+
     def get_entity(self, entity_id: str, publisher: bool = False) -> Dict:
         """Get a single entity by ID."""
         url = self._make_url(f"entities/{entity_id}")

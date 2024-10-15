@@ -50,6 +50,9 @@ class TestApiCollection:
     def test_flush_collection(self, mocker):
         pass
 
+    def test_touch_collection(self, mocker):
+        pass
+
     def test_get_collection_by_foreign_id(self, mocker):
         pass
 
