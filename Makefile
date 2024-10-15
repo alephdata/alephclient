@@ -24,3 +24,12 @@ clean:
 	find . -name '*.egg' -exec rm -f {} +
 	find . -name '*.pyc' -exec rm -f {} +
 	find . -name '*.pyo' -exec rm -f {} +
+
+lint-check:
+	ruff check
+
+format-check:
+	ruff format --check
+
+format:
+	ruff format
