@@ -36,7 +36,6 @@ def fetch_object(api: AlephAPI, path: Path, entity: Dict, overwrite: bool = Fals
     object_path = path.joinpath(file_name)
     url = entity.get("links", {}).get("file")
     if url is not None:
-
         # Skip existing files after checking file size:
         if not overwrite and object_path.exists():
             for file_size in entity.get("properties", {}).get("fileSize", []):

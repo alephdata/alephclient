@@ -87,7 +87,6 @@ class AlephAPI(object):
         session_id: Optional[str] = None,
         retries: int = settings.MAX_TRIES,
     ):
-
         if not host:
             raise AlephException("No host environment variable found")
         self.base_url = urljoin(host, "/api/2/")

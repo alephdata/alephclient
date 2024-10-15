@@ -23,7 +23,8 @@ class TestApiCollection:
         collection_id = "8"
 
         mocker.patch.object(
-            self.api.session, "request",
+            self.api.session,
+            "request",
             return_value=http_error_response,
         )
 
