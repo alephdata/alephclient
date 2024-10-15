@@ -286,6 +286,9 @@ def delete_entity(ctx, entity_id):
 @click.option(
     "--cleaned", is_flag=True, default=False, help="disable server-side validation for all types"
 )
+@click.option(
+    "--investigation", is_flag=True, default=False, help="create an investigation, rather than dataset"
+)
 @click.pass_context
 def write_entities(
     ctx,
@@ -295,12 +298,15 @@ def write_entities(
     chunksize=1000,
     force=False,
     unsafe=False,
-    cleaned=False
+    cleaned=False,
+    investigation=False
 ):
     """Read entities from standard input and index them."""
     api = ctx.obj["api"]
     try:
-        collection = api.load_collection_by_foreign_id(foreign_id)
+        collection = api.load_collection_by_foreign_id(foreign_id, {
+            "casefile": investigation,
+        })
 
         def read_json_stream(stream):
             count = 0
