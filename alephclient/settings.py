@@ -1,5 +1,4 @@
 import os
-import multiprocessing
 
 # Aleph client API settings
 HOST = os.environ.get("MEMORIOUS_ALEPH_HOST")

@@ -2,7 +2,6 @@ import json
 import click
 import logging
 import sys
-from pathlib import Path
 
 from alephclient import settings
 from alephclient.api import AlephAPI

@@ -13,7 +13,7 @@ class TestCrawlDirectory:
         path = Path(os.path.join(self.base_path, "jan/week1"))
         crawldir = CrawlDirectory(AlephAPI, {}, path)
         foreign_id = crawldir.get_foreign_id(path)
-        assert foreign_id == None
+        assert foreign_id is None
 
     def test_get_foreign_id_with_file(self):
         path = Path(os.path.join(self.base_path, "feb/2.txt"))
@@ -33,18 +33,18 @@ class TestCrawlDirectory:
         path = Path(os.path.join(self.base_path, "jan/week1"))
         crawldir = CrawlDirectory(AlephAPI, {}, path)
         is_excluded = crawldir.is_excluded(path)
-        assert is_excluded == False
+        assert not is_excluded
 
     def test_is_excluded_no_exclude(self):
         path = Path(os.path.join(self.base_path, "jan/week1"))
         crawldir = CrawlDirectory(AlephAPI, {}, path)
         crawldir.exclude = None
         is_excluded = crawldir.is_excluded(path)
-        assert is_excluded == False
+        assert not is_excluded
 
     def test_is_excluded_exclude_dir(self):
         path = Path(os.path.join(self.base_path, "jan/week1"))
         crawldir = CrawlDirectory(AlephAPI, {}, path, nojunk=True)
         crawldir.exclude["d"] = re.compile(r"week1\/*", re.I)
         is_excluded = crawldir.is_excluded(path)
-        assert is_excluded == True
+        assert is_excluded

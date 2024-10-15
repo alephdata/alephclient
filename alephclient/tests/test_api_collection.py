@@ -1,7 +1,7 @@
 import pytest
 from requests import Response
 from alephclient.errors import AlephException
-from alephclient.api import AlephAPI, APIResultSet
+from alephclient.api import AlephAPI
 
 
 @pytest.fixture

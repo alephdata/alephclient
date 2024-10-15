@@ -1,14 +1,12 @@
 import logging
 import threading
 import re
-import stat
 import os
 from os import PathLike
 from queue import Queue
-from pathlib import Path, PurePath
+from pathlib import Path
 from typing import cast, Optional, Dict
 
-from alephclient import settings
 from alephclient.api import AlephAPI
 from alephclient.errors import AlephException
 from alephclient.util import backoff

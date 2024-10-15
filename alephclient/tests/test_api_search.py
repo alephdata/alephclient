@@ -12,7 +12,7 @@ class TestApiSearch:
         mocker.patch.object(self.api, "_request")
         search_result = self.api.search(self.fake_query)
 
-        assert isinstance(search_result, APIResultSet) == True
+        assert isinstance(search_result, APIResultSet)
 
     def test_search_url(self, mocker):
         mocker.patch.object(self.api, "_request")
