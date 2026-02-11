@@ -472,7 +472,6 @@ class AlephAPI(object):
         metadata: Optional[Dict] = None,
         sync: bool = False,
         index: bool = True,
-        signed_url: bool = False,
     ) -> Dict:
         """
         Create an empty folder in a collection or upload a document to it
@@ -485,9 +484,6 @@ class AlephAPI(object):
         files, metadata contains foreign_id of the parent. Metadata for a
         directory contains foreign_id for itself as well as its parent and the
         name of the directory.
-        signed_url: use the signed URL workflow for file uploads. When True,
-        files are uploaded via a signed URL instead of multipart ingest.
-        Directories always use the standard ingest endpoint.
         """
         url_path = "collections/{0}/ingest".format(collection_id)
         params = {"sync": sync, "index": index}
@@ -495,9 +491,6 @@ class AlephAPI(object):
         if not file_path or file_path.is_dir():
             data = {"meta": json.dumps(metadata)}
             return self._request("POST", url, data=data)
-
-        if signed_url:
-            return self._signed_url_upload(collection_id, file_path, metadata, index)
 
         for attempt in count(1):
             try:
@@ -517,13 +510,36 @@ class AlephAPI(object):
                 backoff(ae, attempt)
         return {}
 
-    def _signed_url_upload(
+    def signed_url_upload(
         self,
         collection_id: str,
-        file_path: Path,
-        metadata: Optional[Dict],
-        index: bool,
+        file_path: Optional[Path] = None,
+        metadata: Optional[Dict] = None,
+        index: bool = True,
     ) -> Dict:
+        """
+        Upload a document using the signed URL workflow.
+
+        For directories (no file), falls back to the standard ingest endpoint
+        since there is no file content to upload.
+
+        The workflow is:
+        1. POST /file/uploadUrl -> {url, id}
+        2. PUT file content to the signed url
+        3. POST /collections/{id}/document with the upload_id and metadata
+
+        params
+        ------
+        collection_id: id of the collection to upload to
+        file_path: path of the file to upload. None while creating folders
+        metadata: dict containing metadata for the file or folders
+        index: whether to index the document after creation
+        """
+        if not file_path or file_path.is_dir():
+            return self.ingest_upload(
+                collection_id, file_path, metadata=metadata, index=index
+            )
+
         mime_type = mimetypes.guess_type(file_path.name)[0] or MIME
         meta = dict(metadata or {})
         meta["file_name"] = file_path.name
@@ -531,13 +547,14 @@ class AlephAPI(object):
 
         for attempt in count(1):
             try:
-                # Request a signed upload URL
+                # Step 1: request a signed upload URL
                 upload_url = self._make_url("file/uploadUrl")
                 result = self._request("POST", upload_url)
                 signed_url = result["url"]
                 upload_id = result["id"]
+                log.info("Signed URL [%s]: %s", upload_id, signed_url)
 
-                # PUT file content to the signed URL
+                # Step 2: PUT file content to the signed URL
                 try:
                     with file_path.open("rb") as fh:
                         response = self.session.put(
@@ -549,9 +566,7 @@ class AlephAPI(object):
                 except (RequestException, HTTPError) as exc:
                     raise AlephException(exc) from exc
 
-                # Create document record.
-                # The server returns an empty 200 when a document with
-                # the same foreign_id already exists in the collection.
+                # Step 3: create the document record
                 doc_url_path = f"collections/{collection_id}/document"
                 doc_url = self._make_url(doc_url_path, params={"index": index})
                 payload = {"upload_id": upload_id, "meta": meta}

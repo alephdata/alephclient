@@ -122,7 +122,7 @@ class TestTasks(object):
             assert call in self.api.ingest_upload.mock_calls
 
     def test_ingest_signed_url(self, mocker):
-        mocker.patch.object(self.api, "ingest_upload", return_value={"id": 42})
+        mocker.patch.object(self.api, "signed_url_upload", return_value={"id": 42})
         mocker.patch.object(
             self.api, "load_collection_by_foreign_id", return_value={"id": 2}
         )
@@ -136,6 +136,4 @@ class TestTasks(object):
             True,
             signed_url=True,
         )
-        assert self.api.ingest_upload.call_count == 6
-        for call in self.api.ingest_upload.call_args_list:
-            assert call.kwargs.get("signed_url") is True
+        assert self.api.signed_url_upload.call_count == 6

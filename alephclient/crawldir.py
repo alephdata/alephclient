@@ -130,16 +130,20 @@ class CrawlDirectory(object):
         log.info("Upload [%s->%s]: %s", self.collection_id, parent_id, foreign_id)
         if parent_id is not None:
             metadata["parent_id"] = parent_id
-        kwargs = {}
         if self.signed_url:
-            kwargs["signed_url"] = True
-        result = self.api.ingest_upload(
-            self.collection_id,
-            path,
-            metadata=metadata,
-            index=self.index,
-            **kwargs,
-        )
+            result = self.api.signed_url_upload(
+                self.collection_id,
+                path,
+                metadata=metadata,
+                index=self.index,
+            )
+        else:
+            result = self.api.ingest_upload(
+                self.collection_id,
+                path,
+                metadata=metadata,
+                index=self.index,
+            )
         if "id" not in result and not hasattr(result, "id"):
             raise AlephException("Upload failed")
         return result["id"]
