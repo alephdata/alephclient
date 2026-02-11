@@ -1,5 +1,6 @@
 import importlib.metadata
 import json
+import mimetypes
 import uuid
 import logging
 from itertools import count
@@ -471,6 +472,7 @@ class AlephAPI(object):
         metadata: Optional[Dict] = None,
         sync: bool = False,
         index: bool = True,
+        signed_url: bool = False,
     ) -> Dict:
         """
         Create an empty folder in a collection or upload a document to it
@@ -483,6 +485,9 @@ class AlephAPI(object):
         files, metadata contains foreign_id of the parent. Metadata for a
         directory contains foreign_id for itself as well as its parent and the
         name of the directory.
+        signed_url: use the signed URL workflow for file uploads. When True,
+        files are uploaded via a signed URL instead of multipart ingest.
+        Directories always use the standard ingest endpoint.
         """
         url_path = "collections/{0}/ingest".format(collection_id)
         params = {"sync": sync, "index": index}
@@ -490,6 +495,9 @@ class AlephAPI(object):
         if not file_path or file_path.is_dir():
             data = {"meta": json.dumps(metadata)}
             return self._request("POST", url, data=data)
+
+        if signed_url:
+            return self._signed_url_upload(collection_id, file_path, metadata, index)
 
         for attempt in count(1):
             try:
@@ -503,6 +511,54 @@ class AlephAPI(object):
                     )
                     headers = {"Content-Type": m.content_type}
                     return self._request("POST", url, data=m, headers=headers)
+            except AlephException as ae:
+                if not ae.transient or attempt > self.retries:
+                    raise ae from ae
+                backoff(ae, attempt)
+        return {}
+
+    def _signed_url_upload(
+        self,
+        collection_id: str,
+        file_path: Path,
+        metadata: Optional[Dict],
+        index: bool,
+    ) -> Dict:
+        mime_type = mimetypes.guess_type(file_path.name)[0] or MIME
+        meta = dict(metadata or {})
+        meta["file_name"] = file_path.name
+        meta["mime_type"] = mime_type
+
+        for attempt in count(1):
+            try:
+                # Request a signed upload URL
+                upload_url = self._make_url("file/uploadUrl")
+                result = self._request("POST", upload_url)
+                signed_url = result["url"]
+                upload_id = result["id"]
+
+                # PUT file content to the signed URL
+                try:
+                    with file_path.open("rb") as fh:
+                        response = self.session.put(
+                            signed_url,
+                            data=fh,
+                            headers={"Content-Type": "application/octet-stream"},
+                        )
+                        response.raise_for_status()
+                except (RequestException, HTTPError) as exc:
+                    raise AlephException(exc) from exc
+
+                # Create document record.
+                # The server returns an empty 200 when a document with
+                # the same foreign_id already exists in the collection.
+                doc_url_path = f"collections/{collection_id}/document"
+                doc_url = self._make_url(doc_url_path, params={"index": index})
+                payload = {"upload_id": upload_id, "meta": meta}
+                result = self._request("POST", doc_url, json=payload)
+                if not result:
+                    return {"id": upload_id, "status": "ok"}
+                return result
             except AlephException as ae:
                 if not ae.transient or attempt > self.retries:
                     raise ae from ae
