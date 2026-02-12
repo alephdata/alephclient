@@ -549,7 +549,15 @@ class AlephAPI(object):
             try:
                 # Step 1: request a signed upload URL
                 upload_url = self._make_url("file/uploadUrl")
-                result = self._request("POST", upload_url)
+                try:
+                    result = self._request("POST", upload_url)
+                except AlephException as ae:
+                    if ae.status == 404:
+                        raise AlephException(
+                            "Upload endpoint not found. "
+                            "Is this an Aleph Pro instance?"
+                        ) from ae
+                    raise
                 signed_url = result["url"]
                 upload_id = result["id"]
                 log.info("Signed URL id [%s]: %s", upload_id, file_path.name)
