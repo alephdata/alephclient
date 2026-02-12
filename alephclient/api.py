@@ -552,7 +552,8 @@ class AlephAPI(object):
                 result = self._request("POST", upload_url)
                 signed_url = result["url"]
                 upload_id = result["id"]
-                log.info("Signed URL [%s]: %s", upload_id, signed_url)
+                log.info("Signed URL id [%s]: %s", upload_id, file_path.name)
+                log.debug("Signed URL: %s", signed_url)
 
                 # Step 2: PUT file content to the signed URL
                 try:
