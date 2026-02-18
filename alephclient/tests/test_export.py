@@ -30,8 +30,18 @@ class TestListExports:
         assert result == exports
 
     def test_pagination(self, mocker):
-        page1 = {"results": [{"id": "1"}], "next": self.fake_url + "exports?page=2", "offset": 0, "limit": 1}
-        page2 = {"results": [{"id": "2"}], "next": None, "offset": 1, "limit": 1}
+        page1 = {
+            "results": [{"id": "1"}],
+            "next": self.fake_url + "exports?page=2",
+            "offset": 0,
+            "limit": 1,
+        }
+        page2 = {
+            "results": [{"id": "2"}],
+            "next": None,
+            "offset": 1,
+            "limit": 1,
+        }
         mocker.patch.object(
             self.api,
             "_request",
