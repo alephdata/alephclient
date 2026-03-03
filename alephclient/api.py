@@ -561,7 +561,7 @@ class AlephAPI(object):
                 signed_url = result["url"]
                 upload_id = result["id"]
                 log.info("Signed URL id [%s]: %s", upload_id, file_path.name)
-                log.debug("Signed URL: %s", signed_url)
+                log.debug("Signed URL id [%s]", upload_id)
 
                 # Step 2: PUT file content to the signed URL
                 try:
@@ -578,7 +578,7 @@ class AlephAPI(object):
                 # Step 3: create the document record
                 doc_url_path = f"collections/{collection_id}/document"
                 doc_url = self._make_url(doc_url_path, params={"index": index})
-                payload = {"upload_id": upload_id, "meta": meta}
+                payload = {"upload_id": upload_id, "Meta": meta}
                 result = self._request("POST", doc_url, json=payload)
                 if not result:
                     return {"id": upload_id, "status": "ok"}
