@@ -48,3 +48,13 @@ class TestCrawlDirectory:
         crawldir.exclude["d"] = re.compile(r"week1\/*", re.I)
         is_excluded = crawldir.is_excluded(path)
         assert is_excluded
+
+    def test_signed_url_default_false(self):
+        path = Path(os.path.join(self.base_path, "jan/week1"))
+        crawldir = CrawlDirectory(AlephAPI, {}, path)
+        assert crawldir.signed_url is False
+
+    def test_signed_url_true(self):
+        path = Path(os.path.join(self.base_path, "jan/week1"))
+        crawldir = CrawlDirectory(AlephAPI, {}, path, signed_url=True)
+        assert crawldir.signed_url is True

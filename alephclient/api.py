@@ -1,5 +1,6 @@
 import importlib.metadata
 import json
+import mimetypes
 import uuid
 import logging
 from itertools import count
@@ -503,6 +504,84 @@ class AlephAPI(object):
                     )
                     headers = {"Content-Type": m.content_type}
                     return self._request("POST", url, data=m, headers=headers)
+            except AlephException as ae:
+                if not ae.transient or attempt > self.retries:
+                    raise ae from ae
+                backoff(ae, attempt)
+        return {}
+
+    def signed_url_upload(
+        self,
+        collection_id: str,
+        file_path: Optional[Path] = None,
+        metadata: Optional[Dict] = None,
+        index: bool = True,
+    ) -> Dict:
+        """
+        Upload a document using the signed URL workflow.
+
+        For directories (no file), falls back to the standard ingest endpoint
+        since there is no file content to upload.
+
+        The workflow is:
+        1. POST /file/uploadUrl -> {url, id}
+        2. PUT file content to the signed url
+        3. POST /collections/{id}/document with the upload_id and metadata
+
+        params
+        ------
+        collection_id: id of the collection to upload to
+        file_path: path of the file to upload. None while creating folders
+        metadata: dict containing metadata for the file or folders
+        index: whether to index the document after creation
+        """
+        if not file_path or file_path.is_dir():
+            return self.ingest_upload(
+                collection_id, file_path, metadata=metadata, index=index
+            )
+
+        mime_type = mimetypes.guess_type(file_path.name)[0] or MIME
+        meta = dict(metadata or {})
+        meta["file_name"] = file_path.name
+        meta["mime_type"] = mime_type
+
+        for attempt in count(1):
+            try:
+                # Step 1: request a signed upload URL
+                upload_url = self._make_url("file/uploadUrl")
+                try:
+                    result = self._request("POST", upload_url)
+                except AlephException as ae:
+                    if ae.status == 404:
+                        raise AlephException(
+                            "Upload endpoint not found. Is this an Aleph Pro instance?"
+                        ) from ae
+                    raise
+                signed_url = result["url"]
+                upload_id = result["id"]
+                log.info("Signed URL id [%s]: %s", upload_id, file_path.name)
+                log.debug("Signed URL id [%s]", upload_id)
+
+                # Step 2: PUT file content to the signed URL
+                try:
+                    with file_path.open("rb") as fh:
+                        response = self.session.put(
+                            signed_url,
+                            data=fh,
+                            headers={"Content-Type": "application/octet-stream"},
+                        )
+                        response.raise_for_status()
+                except (RequestException, HTTPError) as exc:
+                    raise AlephException(exc) from exc
+
+                # Step 3: create the document record
+                doc_url_path = f"collections/{collection_id}/document"
+                doc_url = self._make_url(doc_url_path, params={"index": index})
+                payload = {"upload_id": upload_id, "Meta": meta}
+                result = self._request("POST", doc_url, json=payload)
+                if not result:
+                    return {"id": upload_id, "status": "ok"}
+                return result
             except AlephException as ae:
                 if not ae.transient or attempt > self.retries:
                     raise ae from ae

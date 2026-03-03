@@ -87,6 +87,12 @@ def cli(ctx, host, api_key, retries):
     help="maximum number of parallel uploads",
 )
 @click.option("-f", "--foreign-id", required=True, help="foreign-id of the collection")
+@click.option(
+    "--signed-url",
+    is_flag=True,
+    default=False,
+    help="use signed URL workflow for file uploads",
+)
 @click.argument("path", type=click.Path(exists=True))
 @click.pass_context
 def crawldir(
@@ -98,6 +104,7 @@ def crawldir(
     noindex=False,
     nojunk=False,
     parallel=1,
+    signed_url=False,
 ):
     """Crawl a directory recursively and upload the documents in it to a
     collection."""
@@ -112,6 +119,7 @@ def crawldir(
             index=not noindex,
             nojunk=nojunk,
             parallel=parallel,
+            signed_url=signed_url,
         )
     except AlephException as exc:
         raise click.ClickException(str(exc))

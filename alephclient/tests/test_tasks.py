@@ -120,3 +120,20 @@ class TestTasks(object):
         ]
         for call in expected_calls:
             assert call in self.api.ingest_upload.mock_calls
+
+    def test_ingest_signed_url(self, mocker):
+        mocker.patch.object(self.api, "signed_url_upload", return_value={"id": 42})
+        mocker.patch.object(
+            self.api, "load_collection_by_foreign_id", return_value={"id": 2}
+        )
+        mocker.patch.object(self.api, "update_collection")
+        crawl_dir(
+            self.api,
+            "alephclient/tests/testdata",
+            "test153",
+            {},
+            True,
+            True,
+            signed_url=True,
+        )
+        assert self.api.signed_url_upload.call_count == 6

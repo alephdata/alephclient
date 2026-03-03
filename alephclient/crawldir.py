@@ -22,9 +22,11 @@ class CrawlDirectory(object):
         path: Path,
         index: bool = True,
         nojunk: bool = False,
+        signed_url: bool = False,
     ):
         self.api = api
         self.index = index
+        self.signed_url = signed_url
         self.exclude = (
             {
                 "f": re.compile(r"\..*|thumbs\.db|desktop\.ini", re.I),
@@ -128,12 +130,20 @@ class CrawlDirectory(object):
         log.info("Upload [%s->%s]: %s", self.collection_id, parent_id, foreign_id)
         if parent_id is not None:
             metadata["parent_id"] = parent_id
-        result = self.api.ingest_upload(
-            self.collection_id,
-            path,
-            metadata=metadata,
-            index=self.index,
-        )
+        if self.signed_url:
+            result = self.api.signed_url_upload(
+                self.collection_id,
+                path,
+                metadata=metadata,
+                index=self.index,
+            )
+        else:
+            result = self.api.ingest_upload(
+                self.collection_id,
+                path,
+                metadata=metadata,
+                index=self.index,
+            )
         if "id" not in result and not hasattr(result, "id"):
             raise AlephException("Upload failed")
         return result["id"]
@@ -147,6 +157,7 @@ def crawl_dir(
     index: bool = True,
     nojunk: bool = False,
     parallel: int = 1,
+    signed_url: bool = False,
 ):
     """Crawl a directory and upload its content to a collection
 
@@ -158,7 +169,9 @@ def crawl_dir(
     """
     root = Path(path).resolve()
     collection = api.load_collection_by_foreign_id(foreign_id, config)
-    crawler = CrawlDirectory(api, collection, root, index=index, nojunk=nojunk)
+    crawler = CrawlDirectory(
+        api, collection, root, index=index, nojunk=nojunk, signed_url=signed_url
+    )
     consumers = []
 
     # Use one thread to produce using scandir and at least one to consume
