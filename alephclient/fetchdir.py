@@ -3,6 +3,7 @@ import requests
 from pathlib import Path
 from pprint import pprint  # noqa
 from typing import Optional, Dict
+from urllib.parse import urlparse, urljoin
 
 from alephclient.api import AlephAPI
 
@@ -36,6 +37,9 @@ def fetch_object(api: AlephAPI, path: Path, entity: Dict, overwrite: bool = Fals
     object_path = path.joinpath(file_name)
     url = entity.get("links", {}).get("file")
     if url is not None:
+        # Aleph Pro may return relative URLs (e.g. /api/2/archive?token=...)
+        if not urlparse(url).scheme:
+            url = urljoin(api.base_url, url)
         # Skip existing files after checking file size:
         if not overwrite and object_path.exists():
             for file_size in entity.get("properties", {}).get("fileSize", []):
