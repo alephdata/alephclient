@@ -554,8 +554,7 @@ class AlephAPI(object):
                 except AlephException as ae:
                     if ae.status == 404:
                         raise AlephException(
-                            "Upload endpoint not found. "
-                            "Is this an Aleph Pro instance?"
+                            "Upload endpoint not found. Is this an Aleph Pro instance?"
                         ) from ae
                     raise
                 signed_url = result["url"]
