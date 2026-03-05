@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from alephclient.api import AlephAPI
-from alephclient.exportdir import list_exports, format_exports_table, download_export
+from alephclient.exports import list_exports, format_exports_table, download_export
 
 
 FAKE_EXPORT = {
@@ -103,7 +103,7 @@ class TestDownloadExport:
             return_value=mock_response,
         )
         mocker.patch(
-            "alephclient.exportdir.list_exports",
+            "alephclient.exports.list_exports",
             return_value=[FAKE_EXPORT],
         )
 
