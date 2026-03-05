@@ -1,6 +1,9 @@
 from pathlib import Path
 from typing import List, Dict
 
+from requests import RequestException
+from requests.exceptions import HTTPError
+
 from alephclient.api import AlephAPI, APIResultSet
 from alephclient.errors import AlephException
 
@@ -42,7 +45,7 @@ def _get_export(api: AlephAPI, export_id: str) -> Dict:
     for export in list_exports(api):
         if str(export.get("id")) == str(export_id):
             return export
-    raise AlephException(ValueError(f"Export {export_id} not found"))
+    raise AlephException(f"Export {export_id} not found")
 
 
 def download_export(api: AlephAPI, export_id: str, destination: str) -> Path:
@@ -50,7 +53,7 @@ def download_export(api: AlephAPI, export_id: str, destination: str) -> Path:
     export = _get_export(api, export_id)
     download_url = export.get("links", {}).get("download")
     if not download_url:
-        raise AlephException(ValueError(f"No download link for export {export_id}"))
+        raise AlephException(f"No download link for export {export_id}")
 
     file_name = export.get("file_name", export_id)
     dest = Path(destination)
@@ -61,7 +64,7 @@ def download_export(api: AlephAPI, export_id: str, destination: str) -> Path:
     try:
         response = api.session.get(download_url, stream=True)
         response.raise_for_status()
-    except Exception as exc:
+    except (RequestException, HTTPError) as exc:
         raise AlephException(exc) from exc
 
     with open(dest, "wb") as fh:
