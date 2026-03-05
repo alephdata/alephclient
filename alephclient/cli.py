@@ -8,6 +8,7 @@ from alephclient.api import AlephAPI
 from alephclient.errors import AlephException
 from alephclient.crawldir import crawl_dir
 from alephclient.fetchdir import fetch_collection, fetch_entity
+from alephclient.exports import list_exports, format_exports_table, download_export
 
 log = logging.getLogger(__name__)
 
@@ -430,6 +431,39 @@ def make_list(ctx, foreign_id, outfile, label, summary):
         raise click.ClickException(exc.message)
     except BrokenPipeError:
         raise click.Abort()
+
+
+@cli.group()
+@click.pass_context
+def export(ctx):
+    """Manage exports."""
+    pass
+
+
+@export.command("list")
+@click.pass_context
+def export_list(ctx):
+    """List all exports."""
+    api = ctx.obj["api"]
+    try:
+        exports = list_exports(api)
+        click.echo(format_exports_table(exports))
+    except AlephException as exc:
+        raise click.ClickException(str(exc))
+
+
+@export.command("download")
+@click.argument("export_id", required=True)
+@click.argument("destination", required=True, type=click.Path())
+@click.pass_context
+def export_download(ctx, export_id, destination):
+    """Download an export by ID to a destination path."""
+    api = ctx.obj["api"]
+    try:
+        path = download_export(api, export_id, destination)
+        click.echo(f"Export downloaded to {path}")
+    except AlephException as exc:
+        raise click.ClickException(str(exc))
 
 
 if __name__ == "__main__":
